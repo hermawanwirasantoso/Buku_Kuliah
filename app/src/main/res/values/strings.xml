@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Buku Kuliah</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_catatan">Buku Kuliah</string>
+    <string name="title_jadwal">Jadwal</string>
+    <string name="judul_buku">Judul Buku</string>
+    <string name="deskripsi_buku">Deskripsi Buku</string>
+    <string name="dialog_title_new_buku">Tambah Buku Baru</string>
+    <string name="dialog_positive_button_new_buku">Tambah</string>
+    <string name="snackbar_success_insert_data">Data Berhasil Ditambah</string>
+    <string name="snackbar_failed_insert_data">Gagal Menambahkan Data</string>
+    <string name="photo">Photo</string>
+    <string name="voice_recording">Voice Recording</string>
+    <string name="previous_page">Previous Page</string>
+    <string name="next_page">Next Page</string>
+    <string name="tambah_buku_baru">Tambah Buku Baru</string>
+    <string name="edit_mode">edit_mode</string>
+    <string name="save">Save</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardUseCompatPadding="true"
+    app:cardElevation="8dp"
+    app:cardCornerRadius="8dp"
+    android:id="@+id/card_buku"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
+
+    <TextView
+        android:id="@+id/tv_new_catatan"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Tambah Catatan Baru"
+        android:drawableBottom="@drawable/ic_add_box_black_144dp"
+        style="@style/TextAppearance.MaterialComponents.Headline6"
+        android:textAlignment="center"
+        android:padding="16dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        />
+
+</androidx.cardview.widget.CardView>
