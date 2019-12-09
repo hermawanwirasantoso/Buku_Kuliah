@@ -1,5 +1,7 @@
 package com.example.bukukuliah.ui.jadwal;
 
+
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
@@ -10,25 +12,26 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.ProgressBar;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.bukukuliah.FirebaseHelper;
 import com.example.bukukuliah.R;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -38,250 +41,114 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.RecyclerView;
-
-import static androidx.constraintlayout.widget.Constraints.TAG;
-
 public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private Context context;
-    private LayoutInflater inflater;
-    private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
     private List<Jadwal> jadwalList;
-    private static final int TYPE_JADWAL = 0;
-    private static final int TYPE_ADD_NEW_JADWAL = 1;
-    private String userUUID;
+    private static final int TYPE_NEW_JADWAL = 1;
+    private static final int TYPE_JADWAL = 2;
+    private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+    private View.OnClickListener onClickNewJadwal;
 
 
-    public JadwalAdapter(Context context, List<Jadwal> jadwalist) {
+
+
+    public JadwalAdapter(Context context, List<Jadwal> jadwalList, FirebaseAuth mAuth, FirebaseFirestore db, View.OnClickListener onClickNewJadwal) {
         this.context = context;
-        this.inflater = LayoutInflater.from(context);
-        this.db = FirebaseFirestore.getInstance();
-        this.jadwalList = jadwalist;
-        this.mAuth = FirebaseAuth.getInstance();
-        if (mAuth.getCurrentUser() != null) {
-            userUUID = mAuth.getCurrentUser().getUid();
-        }
+        this.jadwalList = jadwalList;
+        this.mAuth = mAuth;
+        this.db = db;
+        this.onClickNewJadwal = onClickNewJadwal;
     }
-
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = inflater.inflate(R.layout.new_jadwal_view, parent, false);
-        loadUserInformation();
-        return new newJadwalViewHolder(view, parent);
-    }
 
-    private void loadUserInformation() {
+        if (viewType == TYPE_NEW_JADWAL) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.new_jadwal_view, parent, false);
+            newJadwalViewHolder newJadwalViewHolder = new newJadwalViewHolder(view, onClickNewJadwal);
+            return newJadwalViewHolder;
+        } else {
+            View view2 = LayoutInflater.from(parent.getContext()).inflate(R.layout.jadwal_view, parent, false);
+            jadwalViewHolder jadwalViewHolder = new jadwalViewHolder(view2);
+            return jadwalViewHolder;
+        }
 
-
-        db.collection("jadwal")
-                .whereEqualTo("User_UUID", userUUID)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        for(QueryDocumentSnapshot documents : task.getResult()){
-                            Jadwal temp = new Jadwal();
-                            temp.judul_kegiatan = documents.getData().get(FirebaseHelper.JUDUL_KEGIATAN).toString();
-                            temp.deskripsi_kegiatan = documents.getData().get(FirebaseHelper.DESKRIPSI_KEGIATAN).toString();
-                            temp.Tanggal_Kegiatan = documents.getData().get(FirebaseHelper.TANGGAL_KEGIATAN).toString();
-                            temp.Waktu_kegiatan = documents.getData().get(FirebaseHelper.WAKTU_KEGIATAN).toString();
-                            temp.lokasi_kegiatan = documents.getData().get(FirebaseHelper.LOKASI_KEGIATAN).toString();
-                            jadwalList.add(temp);
-
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
 
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        newJadwalViewHolder newJadwalViewHolder = (newJadwalViewHolder) holder;
+    public int getItemViewType(int position) {
+        if (position == getItemCount() - 1) {
+            return TYPE_NEW_JADWAL;
+        } else {
+            return TYPE_JADWAL;
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int position) {
+        switch (holder.getItemViewType()){
+            case TYPE_NEW_JADWAL:
+                break;
+            case TYPE_JADWAL:
+
+                jadwalViewHolder jadwalViewHolder = (jadwalViewHolder) holder;
+                if (position< jadwalList.size()) {
+                    Jadwal jadwal = jadwalList.get(position);
+                    jadwalViewHolder.txtViewJadwal.setText(jadwal.Judul_kegiatan);
+                    jadwalViewHolder.txtViewDeskripsi.setText(jadwal.Deskripsi_kegiatan);
+                    jadwalViewHolder.txtViewHari.setText(jadwal.Hari_Kegiatan);
+                    jadwalViewHolder.txtViewWaktu.setText(jadwal.Waktu_kegiatan);
+                    jadwalViewHolder.txtViewLokasi.setText(jadwal.Lokasi_kegiatan);
+                }
+
+                break;
+        }
+
+
     }
 
     @Override
     public int getItemCount() {
-        return jadwalList.size()+1;
+        return jadwalList.size() +1;
+
     }
 
+    public class jadwalViewHolder extends RecyclerView.ViewHolder {
 
-    class jadwalViewHolder extends RecyclerView.ViewHolder {
+        CardView cardView;
+        LinearLayout linearLayout;
+        TextView txtViewJadwal, txtViewDeskripsi, txtViewHari, txtViewWaktu, txtViewLokasi;
 
-
-        TextView judul, deskripsi, hari, waktu , lokasi;
-        public jadwalViewHolder(@NonNull View itemView, final ViewGroup parent) {
+        public jadwalViewHolder(@NonNull View itemView) {
             super(itemView);
-            View newJadwalView = inflater.inflate(R.layout.jadwal_view, parent, false);
-            judul = newJadwalView.findViewById(R.id.textViewJudulJadwal);
-            deskripsi = newJadwalView.findViewById(R.id.textViewDeskripsiJadwal);
-            hari = newJadwalView.findViewById(R.id.textViewHariJadwal);
-            waktu = newJadwalView.findViewById(R.id.textViewWaktuJadwal);
-            lokasi = newJadwalView.findViewById(R.id.textViewLokasiJadwal);
 
-            for(int i = 0; i<jadwalList.size();i++){
-                judul.setText(jadwalList.get(i).judul_kegiatan);
-                deskripsi.setText(jadwalList.get(i).deskripsi_kegiatan);
-                hari.setText(jadwalList.get(i).Tanggal_Kegiatan);
-                waktu.setText(jadwalList.get(i).Waktu_kegiatan);
-                lokasi.setText(jadwalList.get(i).lokasi_kegiatan);
-            }
-
+            cardView = itemView.findViewById(R.id.card_jadwal);
+            linearLayout = itemView.findViewById(R.id.linearlayout);
+            txtViewJadwal = itemView.findViewById(R.id.textViewJudulJadwal);
+            txtViewDeskripsi = itemView.findViewById(R.id.textViewDeskripsiJadwal);
+            txtViewHari = itemView.findViewById(R.id.textViewHariJadwal);
+            txtViewWaktu = itemView.findViewById(R.id.textViewWaktuJadwal);
+            txtViewLokasi = itemView.findViewById(R.id.textViewLokasiJadwal);
         }
     }
 
+    public class newJadwalViewHolder extends RecyclerView.ViewHolder {
+        RelativeLayout relativeLayout;
+        CardView cardView;
+        TextView textViewJadwalBaru;
 
-
-
-    class newJadwalViewHolder extends RecyclerView.ViewHolder {
-        TextInputEditText judul, deskripsi, lokasi;
-        Button InputDate, InputTime;
-        DatePickerDialog.OnDateSetListener dateDialog;
-        TimePickerDialog.OnTimeSetListener timeDialog;
-
-
-        public newJadwalViewHolder(@NonNull View itemView, final ViewGroup parent) {
+        public newJadwalViewHolder(@NonNull View itemView, View.OnClickListener onClickListener) {
             super(itemView);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    View newJadwalDialogView = inflater.inflate(R.layout.dialog_new_jadwal, parent, false);
-                    judul = newJadwalDialogView.findViewById(R.id.input_kegiatan);
-                    deskripsi = newJadwalDialogView.findViewById(R.id.input_deskripsi_kegiatan);
-                    lokasi = newJadwalDialogView.findViewById(R.id.input_lokasi);
-                    InputDate = newJadwalDialogView.findViewById(R.id.input_date_kegiatan);
-                    InputTime = newJadwalDialogView.findViewById(R.id.input_time_kegiatan);
-                    final ProgressBar progressBar;
-                    progressBar = newJadwalDialogView.findViewById(R.id.progressbar);
-                    InputDate.setText(new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()));
-                    InputTime.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date()));
-
-                    InputDate.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Calendar cal = Calendar.getInstance();
-                            int year = cal.get(Calendar.YEAR);
-                            int month = cal.get(Calendar.MONTH);
-                            int day = cal.get(Calendar.DAY_OF_MONTH);
-
-                            DatePickerDialog dialog = new DatePickerDialog(
-                                    context,
-                                    android.R.style.Theme_Holo_Light_Dialog_MinWidth,
-                                    dateDialog,
-                                    year, month, day);
-                            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                            dialog.show();
-                        }
-                    });
-
-                    dateDialog = new DatePickerDialog.OnDateSetListener() {
-                        @Override
-                        public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                            month = month + 1;
-                            Log.d(TAG, "onDateSet: mm/dd/yyy: " + month + "/" + day + "/" + year);
-
-                            String date = month + "/" + day + "/" + year;
-                            InputDate.setText(date);
-                        }
-                    };
-
-                    InputTime.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            Calendar cal = Calendar.getInstance();
-                            int hour = cal.get(Calendar.HOUR_OF_DAY);
-                            final int minute = cal.get(Calendar.MINUTE);
-
-                            TimePickerDialog dialog = new TimePickerDialog(context, android.R.style.Theme_Holo_Light_Dialog_NoActionBar, timeDialog, hour, minute, true);
-                            dialog.setTitle("Choose Time : ");
-                            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                            dialog.show();
-                        }
-                    });
-
-
-                    timeDialog = new TimePickerDialog.OnTimeSetListener() {
-                        @Override
-                        public void onTimeSet(TimePicker timePicker, int Hour, int Minute) {
-                            InputTime.setText(Hour + ":" + Minute);
-                        }
-                    };
-
-
-                    new AlertDialog.Builder(context)
-                            .setTitle("Tambah Kegiatan Baru")
-                            .setView(newJadwalDialogView)
-                            .setPositiveButton("Tambah", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    progressBar.setVisibility(View.VISIBLE);
-                                    if (judul.getText().toString() == null) {
-                                        judul.setError("Please Fill The Title");
-                                        judul.requestFocus();
-                                    }
-                                    if (deskripsi.getText().toString() == null) {
-                                        deskripsi.setError("Please Fill The Description");
-                                        deskripsi.requestFocus();
-                                    }
-                                    if (lokasi.getText().toString() == null) {
-                                        lokasi.setError("Please Fill The Location");
-                                        lokasi.requestFocus();
-                                    }
-
-                                    Map<String, Object> jadwal = new HashMap<String, Object>();
-
-                                    jadwal.put(FirebaseHelper.JUDUL_KEGIATAN, judul.getText().toString());
-                                    jadwal.put(FirebaseHelper.DESKRIPSI_KEGIATAN, deskripsi.getText().toString());
-                                    jadwal.put(FirebaseHelper.LOKASI_KEGIATAN, lokasi.getText().toString());
-                                    jadwal.put(FirebaseHelper.TANGGAL_KEGIATAN, InputDate.getText().toString());
-                                    jadwal.put(FirebaseHelper.WAKTU_KEGIATAN, InputTime.getText().toString());
-                                    jadwal.put(FirebaseHelper.USER_UUID, userUUID);
-
-                                    db.collection("jadwal")
-                                            .add(jadwal)
-                                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                                @Override
-                                                public void onSuccess(DocumentReference documentReference) {
-                                                    progressBar.setVisibility(View.GONE);
-                                                    Toast.makeText(context, "Jadwal Berhasil Ditambahkan", Toast.LENGTH_SHORT).show();
-
-                                                }
-                                            })
-                                            .addOnFailureListener(new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    progressBar.setVisibility(View.GONE);
-                                                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
-
-                                                }
-                                            });
-                                }
-                            })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    return;
-                                }
-                            })
-                            .create()
-                            .show();
-                }
-            });
-
+            relativeLayout = itemView.findViewById(R.id.relativeLayout);
+            cardView = itemView.findViewById(R.id.card_jadwal);
+            textViewJadwalBaru = itemView.findViewById(R.id.tv_new_jadwal);
+            itemView.setOnClickListener(onClickListener);
         }
     }
-
 
 }

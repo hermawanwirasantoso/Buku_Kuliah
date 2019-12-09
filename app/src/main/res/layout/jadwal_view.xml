@@ -7,13 +7,14 @@
     app:cardUseCompatPadding="true"
     app:cardElevation="8dp"
     app:cardCornerRadius="8dp"
-    android:id="@+id/card_buku"
+    android:id="@+id/card_jadwal"
     android:foreground="?android:attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
     >
 
     <LinearLayout
+        android:id="@+id/linearlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
