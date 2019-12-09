@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Judul Kegiatan">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_kegiatan"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Deskripsi Kegiatan">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_deskripsi_kegiatan"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+        <RelativeLayout
+            android:id="@+id/relativeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/textViewSelectDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="21dp"
+                android:text="Select Date"
+                />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/input_date_kegiatan"
+                android:layout_width="500dp"
+                android:layout_height="wrap_content"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_margin="5dp"
+                android:layout_toRightOf="@+id/textViewSelectDate"/>
+
+
+            <TextView
+                android:layout_below="@+id/textViewSelectDate"
+                android:id="@+id/textViewSelectTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="Select Time"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/input_time_kegiatan"
+                android:layout_width="500dp"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_margin="5dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_below="@+id/textViewSelectDate"
+                android:layout_toRightOf="@+id/textViewSelectTime"/>
+
+
+
+        </RelativeLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Lokasi Kegiatan">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/input_lokasi"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
+</ScrollView>
