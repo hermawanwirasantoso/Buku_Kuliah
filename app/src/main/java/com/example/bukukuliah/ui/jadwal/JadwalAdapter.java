@@ -52,6 +52,7 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private static final int TYPE_JADWAL = 0;
     private static final int TYPE_ADD_NEW_JADWAL = 1;
     private String userUUID;
+    private String test;
 
     public JadwalAdapter(Context context, List<Jadwal> jadwalist) {
         this.context = context;
