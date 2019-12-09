@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -52,7 +54,7 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private static final int TYPE_JADWAL = 0;
     private static final int TYPE_ADD_NEW_JADWAL = 1;
     private String userUUID;
-    private String test;
+
 
     public JadwalAdapter(Context context, List<Jadwal> jadwalist) {
         this.context = context;
@@ -84,7 +86,14 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         for(QueryDocumentSnapshot documents : task.getResult()){
-                            Log.d("Database" , documents.getId() + "=>" + documents.getData());
+                            Jadwal temp = new Jadwal();
+                            temp.judul_kegiatan = documents.getData().get(FirebaseHelper.JUDUL_KEGIATAN).toString();
+                            temp.deskripsi_kegiatan = documents.getData().get(FirebaseHelper.DESKRIPSI_KEGIATAN).toString();
+                            temp.Tanggal_Kegiatan = documents.getData().get(FirebaseHelper.TANGGAL_KEGIATAN).toString();
+                            temp.Waktu_kegiatan = documents.getData().get(FirebaseHelper.WAKTU_KEGIATAN).toString();
+                            temp.lokasi_kegiatan = documents.getData().get(FirebaseHelper.LOKASI_KEGIATAN).toString();
+                            jadwalList.add(temp);
+
                         }
                     }
                 })
@@ -104,16 +113,36 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return 1;
+        return jadwalList.size()+1;
     }
 
 
     class jadwalViewHolder extends RecyclerView.ViewHolder {
 
-        public jadwalViewHolder(@NonNull View itemView) {
+
+        TextView judul, deskripsi, hari, waktu , lokasi;
+        public jadwalViewHolder(@NonNull View itemView, final ViewGroup parent) {
             super(itemView);
+            View newJadwalView = inflater.inflate(R.layout.jadwal_view, parent, false);
+            judul = newJadwalView.findViewById(R.id.textViewJudulJadwal);
+            deskripsi = newJadwalView.findViewById(R.id.textViewDeskripsiJadwal);
+            hari = newJadwalView.findViewById(R.id.textViewHariJadwal);
+            waktu = newJadwalView.findViewById(R.id.textViewWaktuJadwal);
+            lokasi = newJadwalView.findViewById(R.id.textViewLokasiJadwal);
+
+            for(int i = 0; i<jadwalList.size();i++){
+                judul.setText(jadwalList.get(i).judul_kegiatan);
+                deskripsi.setText(jadwalList.get(i).deskripsi_kegiatan);
+                hari.setText(jadwalList.get(i).Tanggal_Kegiatan);
+                waktu.setText(jadwalList.get(i).Waktu_kegiatan);
+                lokasi.setText(jadwalList.get(i).lokasi_kegiatan);
+            }
+
         }
     }
+
+
+
 
     class newJadwalViewHolder extends RecyclerView.ViewHolder {
         TextInputEditText judul, deskripsi, lokasi;
@@ -134,8 +163,8 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     lokasi = newJadwalDialogView.findViewById(R.id.input_lokasi);
                     InputDate = newJadwalDialogView.findViewById(R.id.input_date_kegiatan);
                     InputTime = newJadwalDialogView.findViewById(R.id.input_time_kegiatan);
-
-
+                    final ProgressBar progressBar;
+                    progressBar = newJadwalDialogView.findViewById(R.id.progressbar);
                     InputDate.setText(new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()));
                     InputTime.setText(new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date()));
 
@@ -197,6 +226,7 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                             .setPositiveButton("Tambah", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+                                    progressBar.setVisibility(View.VISIBLE);
                                     if (judul.getText().toString() == null) {
                                         judul.setError("Please Fill The Title");
                                         judul.requestFocus();
@@ -224,13 +254,17 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                                             .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                                 @Override
                                                 public void onSuccess(DocumentReference documentReference) {
+                                                    progressBar.setVisibility(View.GONE);
                                                     Toast.makeText(context, "Jadwal Berhasil Ditambahkan", Toast.LENGTH_SHORT).show();
+
                                                 }
                                             })
                                             .addOnFailureListener(new OnFailureListener() {
                                                 @Override
                                                 public void onFailure(@NonNull Exception e) {
+                                                    progressBar.setVisibility(View.GONE);
                                                     Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+
                                                 }
                                             });
                                 }

@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.example.bukukuliah.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -30,6 +32,8 @@ public class JadwalFragment extends Fragment {
                 ViewModelProviders.of(this).get(JadwalViewModel.class);
         View root = inflater.inflate(R.layout.fragment_jadwal, container, false);
         Context context = root.getContext();
+
+        jadwalList = new ArrayList<>();
 
         recyclerView = (RecyclerView) root.findViewById(R.id.jadwalRecycleView);
         layoutManager = new LinearLayoutManager(context,RecyclerView.VERTICAL,false);
