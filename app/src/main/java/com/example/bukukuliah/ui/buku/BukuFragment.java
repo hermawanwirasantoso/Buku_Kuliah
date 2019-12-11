@@ -28,6 +28,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -40,22 +42,28 @@ import java.util.Map;
 
 import static android.content.ContentValues.TAG;
 import static com.example.bukukuliah.FirebaseHelper.COLLECTION_BUKU;
+import static com.example.bukukuliah.FirebaseHelper.COLLECTION_USERS;
 import static com.example.bukukuliah.FirebaseHelper.DESKRIPSI_BUKU;
 import static com.example.bukukuliah.FirebaseHelper.JUDUL_BUKU;
 
 
 public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
 
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private List<Buku> bukuList;
     private Context context;
     private View root;
     private LayoutInflater inflater;
     private BukuAdapter adapter;
     private ProgressBar bukuProgressbar;
+    private DocumentReference reference;
 
     public View onCreateView(@NonNull final LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        if (mAuth.getUid()!=null){
+            reference = db.collection(COLLECTION_USERS).document(mAuth.getUid());
+        }
         root = inflater.inflate(R.layout.fragment_buku, container, false);
         this.inflater = inflater;
         context = root.getContext();
@@ -92,6 +100,7 @@ public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
                         , new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
+                                bukuProgressbar.setVisibility(View.VISIBLE);
                                 if (judulEditText.length()>0&&judulEditText.getText()!=null) {
                                     Map<String, Object> buku = new HashMap<>();
                                     buku.put(JUDUL_BUKU, judulEditText.getText().toString());
@@ -100,7 +109,7 @@ public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
                                     else
                                         buku.put(DESKRIPSI_BUKU, "");
 
-                                    db.collection(COLLECTION_BUKU)
+                                    reference.collection(COLLECTION_BUKU)
                                             .add(buku)
                                             .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                                                 @Override
@@ -126,7 +135,7 @@ public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
     }
 
     private void getBookFromFireStore(){
-        db.collection(COLLECTION_BUKU)
+        reference.collection(COLLECTION_BUKU)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override

@@ -18,4 +18,5 @@
     <string name="tambah_buku_baru">Tambah Buku Baru</string>
     <string name="edit_mode">edit_mode</string>
     <string name="save">Save</string>
+    <string name="page_info">Halaman: %1$s dari %2$s</string>
 </resources>

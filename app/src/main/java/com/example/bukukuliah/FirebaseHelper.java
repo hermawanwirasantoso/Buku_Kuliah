@@ -18,4 +18,6 @@ public class FirebaseHelper {
     public static final String WAKTU_KEGIATAN = "Waktu_kegiatan";
     public static final String USER_UUID = "User_UUID";
 
+    public static final String COLLECTION_USERS = "users";
+    public static final String USERS_TIMESTAMP = "user_last_login";
 }

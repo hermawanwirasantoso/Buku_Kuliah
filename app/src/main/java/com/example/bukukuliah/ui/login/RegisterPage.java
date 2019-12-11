@@ -18,19 +18,31 @@ import com.example.bukukuliah.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Maps;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.bukukuliah.FirebaseHelper.COLLECTION_USERS;
+import static com.example.bukukuliah.FirebaseHelper.USERS_TIMESTAMP;
 
 public class RegisterPage extends AppCompatActivity implements View.OnClickListener {
 
-    ProgressBar progressBar;
-    TextInputEditText editTextEmail, editTextPassword;
+    private ProgressBar progressBar;
+    private TextInputEditText editTextEmail, editTextPassword;
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        db = FirebaseFirestore.getInstance();
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR);   //new
         getWindow().setFlags(
                 WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -99,6 +111,7 @@ public class RegisterPage extends AppCompatActivity implements View.OnClickListe
                 progressBar.setVisibility(View.GONE);
                 if(task.isSuccessful()){
                     finish();
+                    createUserOnFirestore();
                     Intent intent = new Intent(RegisterPage.this, MainActivity.class );
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
@@ -113,5 +126,16 @@ public class RegisterPage extends AppCompatActivity implements View.OnClickListe
         });
 
 
+    }
+
+    private void createUserOnFirestore() {
+        Map<String, Object> user = new HashMap<>();
+        user.put(USERS_TIMESTAMP, Timestamp.now());
+        if (mAuth.getUid()!=null) {
+            db.collection(COLLECTION_USERS)
+                    .document(mAuth.getUid())
+                    .set(user);
+
+        }
     }
 }

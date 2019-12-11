@@ -11,8 +11,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.bukukuliah.FirebaseHelper;
 import com.example.bukukuliah.R;
 import com.example.bukukuliah.ui.catatan.Catatan;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,6 +24,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -29,6 +32,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.bukukuliah.FirebaseHelper.COLLECTION_BUKU;
+import static com.example.bukukuliah.FirebaseHelper.COLLECTION_USERS;
 import static com.example.bukukuliah.FirebaseHelper.CONTENT_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.PAGE_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.TANGGAL_CATATAN;
@@ -47,18 +52,21 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     private MaterialButton prevButton, nextButton, newPageButton, boldButton, italicButton,
             underlineButton, highlightButton, addImageButton, addVoiceButton;
     private TextInputEditText mainEditor;
-    private boolean isEditMode, isSaved;
+    private boolean isEditMode;
     private String key;
     private int currentPage;
-    private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private List<Catatan> catatanList;
     private ProgressBar progressBar;
+    private TextView pageInfoTextView, dateTextView;
+    private DocumentReference reference;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
         initView();
+        initFireStore();
         catatanList = new ArrayList<>();
         isEditMode = false;
         currentPage = 0;
@@ -73,14 +81,32 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private void updateHalaman() {
-        if (catatanList!=null && catatanList.size()>0) {
-            mainEditor.setText(catatanList.get(currentPage).content);
+    private void initFireStore() {
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        if (mAuth.getUid()!=null){
+            reference = db.collection(COLLECTION_USERS).document(mAuth.getUid());
         }
     }
 
+
+    private void updateHalaman() {
+        if (catatanList!=null && catatanList.size()>0) {
+            mainEditor.setText(catatanList.get(currentPage).content);
+            pageInfoTextView.setText(getString(R.string.page_info, String.valueOf((currentPage+1))
+                    , String.valueOf(catatanList.size())));
+            dateTextView.setText(timeStampToStringDate((Timestamp) catatanList.get(currentPage).timestamp));
+        }
+    }
+
+    private String timeStampToStringDate(Timestamp timestamp){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-YYYY, hh:mm:ss");
+        return simpleDateFormat.format(timestamp.toDate());
+    }
+
     private void getBookContent() {
-        db.collection(COLLECTION_BUKU).document(key).collection(key)
+        reference.collection(COLLECTION_BUKU).document(key).collection(key)
+                .orderBy(PAGE_CATATAN)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -90,13 +116,20 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                                 catatanList.clear();
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     Map<String, Object> temp = document.getData();
-                                    catatanList.add(new Catatan(temp.get(PAGE_CATATAN).toString(),temp.get(CONTENT_CATATAN).toString(),temp.get(TANGGAL_CATATAN)));
+                                    catatanList.add(new Catatan(document.getId(), temp.get(PAGE_CATATAN).toString(),temp.get(CONTENT_CATATAN).toString(),temp.get(TANGGAL_CATATAN)));
+                                }
+                                if (task.getResult().size()==0){
+                                    Catatan initialNote = new Catatan(null, String.valueOf(currentPage)
+                                            , "",
+                                            Timestamp.now());
+                                    catatanList.add(initialNote);
                                 }
                                 updateHalaman();
                                 progressBar.setVisibility(View.GONE);
                             }
                         } else {
                             Log.w("EditorActivity", "Error getting documents.", task.getException());
+                            progressBar.setVisibility(View.GONE);
                         }
                     }
                 });
@@ -106,14 +139,26 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         progressBar = findViewById(R.id.editor_progressbar);
         mainEditor = findViewById(R.id.mainEditorEditText);
         prevButton = findViewById(R.id.menu_previous_page);
+        prevButton.setOnClickListener(this);
         nextButton = findViewById(R.id.menu_next_page);
+        nextButton.setOnClickListener(this);
         newPageButton = findViewById(R.id.menu_new_page);
+        newPageButton.setOnClickListener(this);
         boldButton = findViewById(R.id.menu_bold);
+        boldButton.setOnClickListener(this);
         italicButton = findViewById(R.id.menu_italic);
+        italicButton.setOnClickListener(this);
         underlineButton = findViewById(R.id.menu_underline);
+        underlineButton.setOnClickListener(this);
         highlightButton = findViewById(R.id.menu_highlight);
+        highlightButton.setOnClickListener(this);
         addImageButton = findViewById(R.id.menu_add_photo);
+        addImageButton.setOnClickListener(this);
         addVoiceButton = findViewById(R.id.menu_add_voice);
+        addVoiceButton.setOnClickListener(this);
+        pageInfoTextView = findViewById(R.id.editor_page_info);
+        dateTextView = findViewById(R.id.editor_last_date);
+
     }
 
     @Override
@@ -121,12 +166,43 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         switch (view.getId()){
             case R.id.menu_new_page:
                 addNewPage();
+                makeToast("Halaman Baru");
+                break;
+            case R.id.menu_next_page:
+                nextPage();
+                break;
+            case R.id.menu_previous_page:
+                previousPage();
                 break;
         }
     }
 
-    private void addNewPage() {
+    private void previousPage() {
+        if (currentPage>0) {
+            catatanList.get(currentPage).content = mainEditor.getText().toString();
+            currentPage--;
+            updateHalaman();
+            makeToast("Previous Page");
+        }
+    }
 
+    private void nextPage() {
+        if (currentPage<catatanList.size()-1) {
+            catatanList.get(currentPage).content = mainEditor.getText().toString();
+            currentPage++;
+            updateHalaman();
+            makeToast("Next Page");
+        }
+    }
+
+    private void addNewPage() {
+        if (catatanList.size()>0) {
+            catatanList.get(currentPage).content = mainEditor.getText().toString();
+            catatanList.get(currentPage).timestamp = Timestamp.now();
+        }
+        catatanList.add(new Catatan(null, String.valueOf((currentPage+1)), "", Timestamp.now()));
+        currentPage = catatanList.size()-1;
+        updateHalaman();
     }
 
     @Override
@@ -154,6 +230,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.editor_save:
                 saveCatatan();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -166,67 +243,43 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
 
     private void saveCatatan() {
         if (catatanList.size()>0) {
-            catatanList.set(currentPage, new Catatan(String.valueOf(currentPage),
-                    mainEditor.getText().toString(), FieldValue.serverTimestamp()));
+            catatanList.get(currentPage).content = mainEditor.getText().toString();
+            catatanList.get(currentPage).timestamp = Timestamp.now();
         }else {
-            catatanList.add(new Catatan(String.valueOf(currentPage),
-                    mainEditor.getText().toString(), FieldValue.serverTimestamp()));
+            catatanList.add(new Catatan(null, String.valueOf(currentPage),
+                    mainEditor.getText().toString(), Timestamp.now()));
         }
-        db.collection(COLLECTION_BUKU).document(key).collection(key)
-                .orderBy(PAGE_CATATAN, Query.Direction.ASCENDING)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            if (task.getResult()!=null) {
-                                if (task.getResult().size()>0) {
-                                    for (QueryDocumentSnapshot document : task.getResult()) {
-                                        Catatan temp = catatanList.get(Integer.parseInt(String.valueOf(document.getData().get(PAGE_CATATAN))));
-                                        Map<String, Object> catatan = new HashMap<>();
-                                        catatan.put(CONTENT_CATATAN, temp.content);
-                                        catatan.put(PAGE_CATATAN, temp.page);
-                                        catatan.put(TANGGAL_CATATAN, temp.timestamp);
-                                        db.collection(COLLECTION_BUKU)
-                                                .document(key)
-                                                .collection(key)
-                                                .document(document.getId())
-                                                .set(catatan)
-                                                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                                    @Override
-                                                    public void onSuccess(Void aVoid) {
-                                                        makeToast("Berhasil Overwrite");
-                                                    }
-                                                });
-                                    }
-                                }else {
-                                    for (int i=0;i<catatanList.size();i++){
-                                        Catatan temp = catatanList.get(i);
-                                        Map<String, Object> catatan = new HashMap<>();
-                                        catatan.put(CONTENT_CATATAN, temp.content);
-                                        catatan.put(PAGE_CATATAN, temp.page);
-                                        catatan.put(TANGGAL_CATATAN, temp.timestamp);
+        for (Catatan catatan: catatanList){
+            Map<String, Object> temp = new HashMap<>();
+            temp.put(CONTENT_CATATAN, catatan.content);
+            temp.put(PAGE_CATATAN, catatan.page);
+            temp.put(TANGGAL_CATATAN, catatan.timestamp);
+            if (catatan.uid!=null){
+                reference.collection(COLLECTION_BUKU)
+                        .document(key)
+                        .collection(key)
+                        .document(catatan.uid)
+                        .set(temp)
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                getBookContent();
 
-                                        db.collection(COLLECTION_BUKU)
-                                                .document(key)
-                                                .collection(key)
-                                                .add(catatan)
-                                                .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                        makeToast("Catatan Baru Berhasil Ditambah");
-                                                    }
-                                                });
-                                    }
-                                }
                             }
-                        } else {
-                            Log.w("EditorActivity", "Error getting documents.", task.getException());
-                        }
-                    }
-                });
-
-
+                        });
+            }else {
+                reference.collection(COLLECTION_BUKU)
+                        .document(key)
+                        .collection(key)
+                        .add(temp)
+                        .addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentReference> task) {
+                                getBookContent();
+                            }
+                        });
+            }
+        }
     }
 
     private void showEditTools() {

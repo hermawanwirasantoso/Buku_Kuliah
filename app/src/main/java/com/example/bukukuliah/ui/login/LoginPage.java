@@ -20,8 +20,16 @@ import com.example.bukukuliah.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.example.bukukuliah.FirebaseHelper.COLLECTION_USERS;
+import static com.example.bukukuliah.FirebaseHelper.USERS_TIMESTAMP;
 
 public class LoginPage extends AppCompatActivity implements View.OnClickListener {
 
@@ -109,6 +117,7 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
                 progressBar.setVisibility(View.GONE);
                 if(task.isSuccessful()){
                     finish();
+                    updateUserOnFirestore();
                     Intent intent = new Intent(LoginPage.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                     startActivity(intent);
@@ -117,5 +126,17 @@ public class LoginPage extends AppCompatActivity implements View.OnClickListener
                 }
             }
         });
+    }
+
+    private void updateUserOnFirestore() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> user = new HashMap<>();
+        user.put(USERS_TIMESTAMP, Timestamp.now());
+        if (mAuth.getUid()!=null) {
+            db.collection(COLLECTION_USERS)
+                    .document(mAuth.getUid())
+                    .set(user);
+
+        }
     }
 }
