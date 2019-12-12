@@ -4,19 +4,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.editor.EditorActivity"
-    android:padding="@dimen/padding_normal">
+    android:padding="@dimen/padding_normal"
+    tools:context=".ui.editor.EditorActivity">
 
     <ProgressBar
         android:id="@+id/editor_progressbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_info_page"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        app:cardUseCompatPadding="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -26,116 +27,143 @@
 
             <TextView
                 android:id="@+id/editor_page_info"
-                android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textAlignment="textStart"/>
+                android:layout_weight="1"
+                android:textAlignment="textStart" />
+
             <TextView
                 android:id="@+id/editor_last_date"
-                android:layout_weight="1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:textAlignment="textEnd"/>
+                android:layout_weight="1"
+                android:textAlignment="textEnd" />
 
         </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/editor_menu_container"
-        android:layout_below="@id/card_info_page"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        android:layout_above="@id/media_container"
+        android:layout_below="@id/card_info_page">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/mainEditorEditText"
-            android:gravity="top|left"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:enabled="false" />
+            android:enabled="false"
+            android:gravity="top|left" />
 
     </com.google.android.material.textfield.TextInputLayout>
+
+    <LinearLayout
+        android:id="@+id/media_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_above="@id/editor_menu_container"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/media_picture"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_margin="8dp"
+            android:text="Show Images"/>
+        <Button
+            android:id="@+id/media_records"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="8dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:text="Show Audio Files"/>
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/editor_menu_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_previous_page"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            app:icon="@drawable/ic_navigate_before_black_24dp"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_navigate_before_black_24dp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_new_page"
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            app:icon="@drawable/ic_note_add_24px"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_note_add_24px" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_add_photo"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_add_photo_alternate_24px"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_add_photo_alternate_24px" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_add_voice"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_record_voice_over_black_24dp"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_record_voice_over_black_24dp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_bold"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_format_bold_black_24dp"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_format_bold_black_24dp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_italic"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_format_italic_black_24dp"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_format_italic_black_24dp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_underline"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_format_underlined_black_24dp"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_format_underlined_black_24dp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_highlight"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_border_color_black_24dp"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_border_color_black_24dp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_next_page"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            app:icon="@drawable/ic_navigate_next_black_24dp"
             style="@style/IconOnlyButton"
-            />
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_navigate_next_black_24dp" />
 
     </LinearLayout>
 

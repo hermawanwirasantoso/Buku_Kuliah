@@ -6,7 +6,8 @@ public class FirebaseHelper {
     public static final String JUDUL_BUKU = "judul_buku";
     public static final String DESKRIPSI_BUKU = "deskripsi_buku";
 
-    public static final String CONTENT_CATATAN = "catatan";
+    public static final String COLLECTION_CATATAN = "catatan";
+    public static final String CONTENT_CATATAN = "content";
     public static final String PAGE_CATATAN = "page";
     public static final String TANGGAL_CATATAN = "tanggal";
 
@@ -20,4 +21,11 @@ public class FirebaseHelper {
 
     public static final String COLLECTION_USERS = "users";
     public static final String USERS_TIMESTAMP = "user_last_login";
+
+    public static final String COLLECTION_GAMBAR = "gambar";
+    public static final String URL_GAMBAR = "url_gambar";
+    public static final String DESC_GAMBAR = "desc_gambar";
+
+
+    public static final String STORAGE_SAVED_IMAGE = "users/";
 }

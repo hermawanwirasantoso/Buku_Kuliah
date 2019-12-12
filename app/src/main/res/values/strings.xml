@@ -19,4 +19,15 @@
     <string name="edit_mode">edit_mode</string>
     <string name="save">Save</string>
     <string name="page_info">Halaman: %1$s dari %2$s</string>
+    <string name="photo_source">Choose Source</string>
+    <string name="daftar_gambar">Daftar Gambar</string>
+    <string name="deskripsi_gambar">Deskripsi Gambar</string>
+    <string name="simpan">Simpan</string>
+    <string name="batal">Batal</string>
+    <string name="gambar_baru">Gambar Baru</string>
+    <string-array name="dialog_add_photo">
+        <item>Camera</item>
+        <item>Gallery</item>
+        <item>Saved Photo</item>
+    </string-array>
 </resources>

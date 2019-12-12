@@ -17,13 +17,11 @@ import java.util.List;
 
 public class BukuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private Context context;
     private List<Buku> bukuList;
     private LayoutInflater inflater;
     private int height;
     private static final int TYPE_NOTE = 0;
     private static final int TYPE_ADD_NEW_NOTE = 1;
-    private FirebaseFirestore db;
     private View.OnClickListener onClickNewBuku;
     private OpenBuku openBuku;
 
@@ -32,11 +30,9 @@ public class BukuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     public BukuAdapter(Context context, List<Buku> bukuList, int height, OpenBuku openBuku, View.OnClickListener onClickNewBuku) {
-        this.context = context;
         this.bukuList = bukuList;
         this.inflater = LayoutInflater.from(context);
         this.height = height;
-        this.db = FirebaseFirestore.getInstance();
         this.onClickNewBuku = onClickNewBuku;
         this.openBuku = openBuku;
     }
