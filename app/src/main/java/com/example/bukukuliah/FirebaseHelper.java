@@ -25,6 +25,8 @@ public class FirebaseHelper {
     public static final String COLLECTION_GAMBAR = "gambar";
     public static final String URL_GAMBAR = "url_gambar";
     public static final String DESC_GAMBAR = "desc_gambar";
+    public static final String TIMESTAMP_GAMBAR = "timestamp_gambar";
+    public static final String PAGE_GAMBAR = "page_gambar";
 
 
     public static final String STORAGE_SAVED_IMAGE = "users/";

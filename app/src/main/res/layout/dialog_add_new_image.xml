@@ -9,6 +9,7 @@
         android:id="@+id/choosen_imageview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
         android:layout_above="@id/container_input_desc_gambar"/>
 
     <com.google.android.material.textfield.TextInputLayout

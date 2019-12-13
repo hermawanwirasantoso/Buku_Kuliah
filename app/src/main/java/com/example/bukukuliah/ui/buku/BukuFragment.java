@@ -146,8 +146,8 @@ public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     Map<String, Object> temp = document.getData();
                                     bukuList.add(new Buku(document.getId(),temp.get(JUDUL_BUKU).toString(),temp.get(DESKRIPSI_BUKU).toString()));
-                                    adapter.notifyDataSetChanged();
                                 }
+                                adapter.notifyDataSetChanged();
                                 bukuProgressbar.setVisibility(View.INVISIBLE);
                             }
                         } else {

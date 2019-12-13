@@ -67,7 +67,7 @@
         android:layout_above="@id/editor_menu_container"
         android:padding="8dp">
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/media_picture"
             android:layout_weight="1"
             android:layout_width="0dp"
@@ -75,7 +75,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_margin="8dp"
             android:text="Show Images"/>
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/media_records"
             android:layout_weight="1"
             android:layout_width="0dp"

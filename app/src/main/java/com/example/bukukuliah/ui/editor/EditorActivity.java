@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -12,34 +14,28 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
+import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.style.ImageSpan;
 import android.util.Log;
-import android.util.Pair;
-import android.util.SparseIntArray;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.bukukuliah.FirebaseHelper;
 import com.example.bukukuliah.R;
 import com.example.bukukuliah.ui.catatan.Catatan;
+import com.example.bukukuliah.ui.editor.images.ImageListAdapter;
+import com.example.bukukuliah.ui.editor.images.SavedImage;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -49,9 +45,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -61,6 +55,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Time;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,15 +65,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.bumptech.glide.load.resource.bitmap.TransformationUtils.rotateImage;
 import static com.example.bukukuliah.FirebaseHelper.COLLECTION_BUKU;
 import static com.example.bukukuliah.FirebaseHelper.COLLECTION_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.COLLECTION_GAMBAR;
 import static com.example.bukukuliah.FirebaseHelper.COLLECTION_USERS;
 import static com.example.bukukuliah.FirebaseHelper.CONTENT_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.DESC_GAMBAR;
+import static com.example.bukukuliah.FirebaseHelper.DESKRIPSI_BUKU;
 import static com.example.bukukuliah.FirebaseHelper.PAGE_CATATAN;
+import static com.example.bukukuliah.FirebaseHelper.PAGE_GAMBAR;
 import static com.example.bukukuliah.FirebaseHelper.STORAGE_SAVED_IMAGE;
 import static com.example.bukukuliah.FirebaseHelper.TANGGAL_CATATAN;
+import static com.example.bukukuliah.FirebaseHelper.TIMESTAMP_GAMBAR;
 import static com.example.bukukuliah.FirebaseHelper.URL_GAMBAR;
 import static com.example.bukukuliah.ui.buku.BukuFragment.INTENT_ID_BUKU;
 import static com.example.bukukuliah.ui.buku.BukuFragment.INTENT_JUDUL_BUKU;
@@ -85,7 +85,7 @@ import static com.example.bukukuliah.ui.buku.BukuFragment.INTENT_JUDUL_BUKU;
 public class EditorActivity extends AppCompatActivity implements View.OnClickListener {
 
     private MaterialButton prevButton, nextButton, newPageButton, boldButton, italicButton,
-            underlineButton, highlightButton, addImageButton, addVoiceButton;
+            underlineButton, highlightButton, addImageButton, addVoiceButton, showImageButton, showAudioButton;
     private TextInputEditText mainEditor;
     private boolean isEditMode;
     private String key;
@@ -197,6 +197,10 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         addVoiceButton.setOnClickListener(this);
         pageInfoTextView = findViewById(R.id.editor_page_info);
         dateTextView = findViewById(R.id.editor_last_date);
+        showImageButton = findViewById(R.id.media_picture);
+        showImageButton.setOnClickListener(this);
+        showAudioButton = findViewById(R.id.media_records);
+        showAudioButton.setOnClickListener(this);
     }
 
     @Override
@@ -215,7 +219,73 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.menu_add_photo:
                 photoDialog();
                 break;
+            case R.id.media_picture:
+                pictureListDialog();
+                break;
         }
+    }
+
+    private void pictureListDialog() {
+        View picturesView = getLayoutInflater().inflate(R.layout.dialog_list_of_picture, null);
+        RecyclerView pictureRecycleView = picturesView.findViewById(R.id.images_recycleview);
+        final ProgressBar pictureListProgressbar = picturesView.findViewById(R.id.images_list_progressbar);
+        final CheckBox wholeBookCheckBox = picturesView.findViewById(R.id.checkbox_whole_book);
+        final List<SavedImage> imageList = new ArrayList<>();
+        final ImageListAdapter adapter = new ImageListAdapter(this, imageList);
+        wholeBookCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                getImagesList(imageList, adapter, pictureListProgressbar, wholeBookCheckBox.isChecked());
+            }
+        });
+        pictureRecycleView.setLayoutManager(new LinearLayoutManager(this));
+        pictureRecycleView.setAdapter(adapter);
+        new AlertDialog.Builder(this)
+                .setTitle(getString(R.string.daftar_gambar))
+                .setView(picturesView)
+                .setPositiveButton("Ok", null)
+                .show();
+        getImagesList(imageList, adapter, pictureListProgressbar, wholeBookCheckBox.isChecked());
+    }
+
+    private void getImagesList(final List<SavedImage> imageList,
+                               final ImageListAdapter adapter,
+                               final ProgressBar pictureListProgressbar,
+                               final boolean isWholeBook) {
+        pictureListProgressbar.setVisibility(View.VISIBLE);
+        reference.collection(COLLECTION_BUKU).document(key)
+                .collection(COLLECTION_GAMBAR)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            if (task.getResult() != null) {
+                                imageList.clear();
+                                for (QueryDocumentSnapshot document : task.getResult()) {
+                                    Map<String, Object> temp = document.getData();
+                                    if (!isWholeBook) {
+                                        if ((long) temp.get(PAGE_GAMBAR) == currentPage) {
+                                            imageList.add(new SavedImage(temp.get(URL_GAMBAR).toString(),
+                                                    temp.get(DESC_GAMBAR).toString(),
+                                                    (Timestamp) temp.get(TIMESTAMP_GAMBAR),
+                                                    (long) temp.get(PAGE_GAMBAR)));
+                                        }
+                                    }else {
+                                        imageList.add(new SavedImage(temp.get(URL_GAMBAR).toString(),
+                                                temp.get(DESC_GAMBAR).toString(),
+                                                (Timestamp) temp.get(TIMESTAMP_GAMBAR),
+                                                (long) temp.get(PAGE_GAMBAR)));
+                                    }
+                                }
+                                adapter.notifyDataSetChanged();
+                                pictureListProgressbar.setVisibility(View.INVISIBLE);
+                            }
+                        } else {
+                            makeToast("Gagal Mengambil Data Gambar");
+                        }
+                    }
+                });
     }
 
     private void photoDialog() {
@@ -231,19 +301,17 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                             case 1:
                                 openGallery();
                                 break;
-                            case 2:
-                                openFirebaseStorage();
-                                break;
                         }
                     }
                 }).show();
     }
 
-    private void openFirebaseStorage() {
-
-    }
+    public static final int REQUEST_IMAGE_GALLERY = 2;
 
     private void openGallery() {
+        Intent pickPhoto = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(pickPhoto, REQUEST_IMAGE_GALLERY);
     }
 
     static final int REQUEST_IMAGE_CAMERA = 1;
@@ -270,7 +338,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
 
     }
 
-    String currentPhotoPath;
+    private String currentPhotoPath;
 
     private File createImageFile() throws IOException {
         // Create an image file name
@@ -291,35 +359,81 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if (requestCode == REQUEST_IMAGE_CAMERA && resultCode == Activity.RESULT_OK) {
-            View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_new_image, null);
             BitmapFactory.Options bmOptions = new BitmapFactory.Options();
             Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
+
 //            double koefisien = (double)dialogView.getWidth()/(double)bitmap.getWidth();
 //            int destHeight = (int)((double)(bitmap.getHeight()*koefisien));
 //            bitmap = Bitmap.createScaledBitmap(bitmap,dialogView.getWidth(), destHeight,true);
-            ImageView choosenImage = dialogView.findViewById(R.id.choosen_imageview);
-            choosenImage.setImageBitmap(bitmap);
-            final TextInputEditText descInput = dialogView.findViewById(R.id.input_deskripsi_gambar);
-            new AlertDialog.Builder(this).setTitle(getString(R.string.gambar_baru))
-                    .setView(dialogView)
-                    .setPositiveButton(getString(R.string.simpan), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            if (descInput.getText()!=null&&descInput.getText().length()>0)
-                                uploadPicture(descInput.getText().toString());
-                            else
-                                uploadPicture("");
-                            // TODO: 11-Dec-19 simpan gambar ke firebase dan buat dokumen baru dalam subkoleksi catatan
-                        }
-                    })
-                    .setNegativeButton(getString(R.string.batal), null)
-                    .show();
+            addImageDialog(adjustOrientation(bitmap), null);
+        } else if (requestCode == REQUEST_IMAGE_GALLERY && resultCode == Activity.RESULT_OK) {
+            Uri uri = null;
+            if (data != null) {
+                uri = data.getData();
+                try {
+                    final InputStream imageStream = getContentResolver().openInputStream(uri);
+                    final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                    currentPhotoPath = uri.getPath();
+                    addImageDialog(adjustOrientation(selectedImage), uri);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    private Bitmap adjustOrientation(Bitmap bitmap) {
+        try {
+            ExifInterface ei = new ExifInterface(currentPhotoPath);
+            int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
+            switch (orientation) {
 
-    private void uploadPicture(final String descInput) {
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    bitmap = rotateImage(bitmap, 90);
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    bitmap = rotateImage(bitmap, 180);
+                    break;
+
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    bitmap = rotateImage(bitmap, 270);
+                    break;
+
+                case ExifInterface.ORIENTATION_NORMAL:
+                default:
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    private void addImageDialog(Bitmap bitmap, final Uri uri) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_new_image, null);
+        ImageView choosenImage = dialogView.findViewById(R.id.choosen_imageview);
+        choosenImage.setImageBitmap(bitmap);
+        final TextInputEditText descInput = dialogView.findViewById(R.id.input_deskripsi_gambar);
+        new AlertDialog.Builder(this).setTitle(getString(R.string.gambar_baru))
+                .setView(dialogView)
+                .setPositiveButton(getString(R.string.simpan), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (descInput.getText() != null && descInput.getText().length() > 0)
+                            uploadPicture(descInput.getText().toString(), uri);
+                        else
+                            uploadPicture("", uri);
+                        // TODO: 11-Dec-19 simpan gambar ke firebase dan buat dokumen baru dalam subkoleksi catatan
+                    }
+                })
+                .setNegativeButton(getString(R.string.batal), null)
+                .show();
+    }
+
+
+    private void uploadPicture(final String descInput, Uri uri) {
         final View dialogView = getLayoutInflater().inflate(R.layout.dialog_upload_progress, null);
         final TextView progressTextView = dialogView.findViewById(R.id.progress_textview);
         final ProgressBar uploadProgressBar = dialogView.findViewById(R.id.upload_progressbar);
@@ -329,7 +443,12 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 .setTitle("Uploading...")
                 .setView(dialogView)
                 .show();
-        Uri file = Uri.fromFile(new File(currentPhotoPath));
+        Uri file;
+        if (uri == null) {
+            file = Uri.fromFile(new File(currentPhotoPath));
+        } else {
+            file = uri;
+        }
         final StorageReference imageRefs = storageRef.child("images/"
                 + key
                 + "/"
@@ -364,7 +483,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
             public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
                 double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
                 String progressText = String.format(Locale.US, "Upload Progress: %.2f", progress);
-                progressTextView.setText(progressText+"%");
+                progressTextView.setText(progressText + "%");
             }
         });
     }
@@ -374,59 +493,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         imageRefs.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(final Uri uri) {
-                if (catatanList.get(currentPage).uid==null){
-                    Map<String, Object> temp = new HashMap<>();
-                    temp.put(CONTENT_CATATAN, mainEditor.getText().toString());
-                    temp.put(PAGE_CATATAN, currentPage);
-                    temp.put(TANGGAL_CATATAN, Timestamp.now());
-                    reference.collection(COLLECTION_BUKU).document(key)
-                            .collection(COLLECTION_CATATAN)
-                            .add(temp)
-                            .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                @Override
-                                public void onSuccess(DocumentReference documentReference) {
-                                    makeToast("Catatan Disimpan");
-                                    reference.collection(COLLECTION_BUKU).document(key).collection(COLLECTION_CATATAN)
-                                            .orderBy(PAGE_CATATAN)
-                                            .get()
-                                            .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                                                @Override
-                                                public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                                                    if (task.isSuccessful()) {
-                                                        if (task.getResult() != null) {
-                                                            catatanList.clear();
-                                                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                                                Map<String, Object> temp = document.getData();
-                                                                catatanList.add(new Catatan(document.getId(), temp.get(PAGE_CATATAN).toString(), temp.get(CONTENT_CATATAN).toString(), temp.get(TANGGAL_CATATAN)));
-                                                            }
-                                                            if (task.getResult().size() == 0) {
-                                                                Catatan initialNote = new Catatan(null, String.valueOf(currentPage)
-                                                                        , "",
-                                                                        Timestamp.now());
-                                                                catatanList.add(initialNote);
-                                                            }
-                                                            updateHalaman();
-                                                            putImageDetail(descInput, uri);
-                                                            progressBar.setVisibility(View.GONE);
-                                                        } else {
-                                                            progressBar.setVisibility(View.GONE);
-                                                        }
-                                                    } else {
-                                                        Log.w("EditorActivity", "Error getting documents.", task.getException());
-                                                    }
-                                                }
-                                            });
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    makeToast("Gagal Simpan Catatan");
-                                }
-                            });
-                }else {
-                    putImageDetail(descInput, uri);
-                }
+                putImageDetail(descInput, uri);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -436,13 +503,13 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    private void putImageDetail(String descInput, Uri uri){
+    private void putImageDetail(String descInput, Uri uri) {
         Map<String, Object> temp = new HashMap<>();
         temp.put(DESC_GAMBAR, descInput);
         temp.put(URL_GAMBAR, uri.toString());
+        temp.put(TIMESTAMP_GAMBAR, Timestamp.now());
+        temp.put(PAGE_GAMBAR, currentPage);
         reference.collection(COLLECTION_BUKU).document(key)
-                .collection(COLLECTION_CATATAN)
-                .document(catatanList.get(currentPage).uid)
                 .collection(COLLECTION_GAMBAR)
                 .add(temp)
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {

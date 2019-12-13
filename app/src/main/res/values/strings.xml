@@ -25,9 +25,10 @@
     <string name="simpan">Simpan</string>
     <string name="batal">Batal</string>
     <string name="gambar_baru">Gambar Baru</string>
+    <string name="kembali">Kembali</string>
+    <string name="putar">Putar</string>
     <string-array name="dialog_add_photo">
         <item>Camera</item>
         <item>Gallery</item>
-        <item>Saved Photo</item>
     </string-array>
 </resources>
