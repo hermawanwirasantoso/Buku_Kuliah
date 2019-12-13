@@ -9,9 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.example.bukukuliah.R;
 import com.github.chrisbanes.photoview.PhotoView;
@@ -21,7 +19,7 @@ import com.squareup.picasso.Picasso;
 import java.io.IOException;
 
 import static com.bumptech.glide.load.resource.bitmap.TransformationUtils.rotateImage;
-import static com.example.bukukuliah.ui.editor.images.ImageListAdapter.INTENT_IMAGE_URL;
+import static com.example.bukukuliah.ui.editor.images.FileListAdapter.INTENT_IMAGE_URL;
 
 public class ImageViewerActivity extends AppCompatActivity implements View.OnClickListener {
 
