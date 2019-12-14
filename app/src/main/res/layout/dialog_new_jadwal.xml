@@ -49,7 +49,7 @@
 
             <TextView
                 android:id="@+id/textViewSelectDate"
-                android:layout_width="wrap_content"
+                android:layout_width="120dp"
                 android:layout_height="wrap_content"
                 android:padding="21dp"
                 android:text="Select Date"
@@ -65,22 +65,41 @@
 
             <TextView
                 android:layout_below="@+id/textViewSelectDate"
-                android:id="@+id/textViewSelectTime"
-                android:layout_width="wrap_content"
+                android:id="@+id/textViewSelectTimeStart"
+                android:layout_width="120dp"
                 android:layout_height="wrap_content"
                 android:padding="20dp"
-                android:text="Select Time"
+                android:text="Time Start"
                 />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/input_time_kegiatan"
+                android:id="@+id/input_time_start_kegiatan"
                 android:layout_width="500dp"
                 android:layout_height="wrap_content"
                 android:text=""
                 android:layout_margin="5dp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_below="@+id/textViewSelectDate"
-                android:layout_toRightOf="@+id/textViewSelectTime"/>
+                android:layout_toRightOf="@+id/textViewSelectDate"/>
+
+            <TextView
+                android:layout_below="@+id/textViewSelectTimeStart"
+                android:id="@+id/textViewSelectTimeEnd"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:text="Time End"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/input_time_end_kegiatan"
+                android:layout_width="500dp"
+                android:layout_height="wrap_content"
+                android:text=""
+                android:layout_margin="5dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_below="@+id/textViewSelectTimeStart"
+                android:layout_toRightOf="@+id/textViewSelectDate"/>
 
 
 

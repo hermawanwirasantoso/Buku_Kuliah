@@ -1,60 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
+    android:id="@+id/card_jadwal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardUseCompatPadding="true"
-    app:cardElevation="8dp"
-    app:cardCornerRadius="8dp"
-    android:id="@+id/card_jadwal"
-    android:foreground="?android:attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
-    >
+    android:foreground="?android:attr/selectableItemBackground"
+    android:orientation="vertical"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="8dp"
+    app:cardUseCompatPadding="true">
 
-    <LinearLayout
-        android:id="@+id/linearlayout"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp"
-        android:orientation="vertical">
+        android:layout_height="150dp">
 
-        <TextView
-            android:id="@+id/textViewJudulJadwal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.MaterialComponents.Headline4"
-            android:text="Judul Jadwal"
-            />
-        <TextView
-            android:id="@+id/textViewDeskripsiJadwal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.MaterialComponents.Caption"
-            android:text="Deskripsi jadwal"/>
-        <TextView
-            android:id="@+id/textViewLokasiJadwal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.MaterialComponents.Caption"
-            android:text="Lokasi jadwal"/>
+        <LinearLayout
+            android:id="@+id/linearlayout"
+            android:layout_width="250dp"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="8dp">
 
-        <TextView
-            android:id="@+id/textViewHariJadwal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.MaterialComponents.Caption"
-            android:text="Hari jadwal"/>
+            <TextView
+                android:id="@+id/textViewJudulJadwal"
+                style="@style/TextAppearance.MaterialComponents.Headline4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Judul Jadwal" />
 
-        <TextView
-            android:id="@+id/textViewWaktuJadwal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/TextAppearance.MaterialComponents.Caption"
-            android:text="Waktu jadwal"/>
+            <TextView
+                android:id="@+id/textViewDeskripsiJadwal"
+                style="@style/TextAppearance.MaterialComponents.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Deskripsi jadwal" />
 
 
-    </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@+id/linearlayout"
+            android:orientation="vertical"
+            android:padding="8dp">
+
+            <TextView
+                android:id="@+id/textViewHariJadwal"
+                android:textAllCaps="true"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="#000"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="Hari jadwal"
+                android:textAlignment="textEnd" />
+
+
+            <TextView
+                android:id="@+id/textViewLokasiJadwal"
+                style="@style/TextAppearance.MaterialComponents.Subtitle1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lokasi jadwal"
+                android:textAlignment="textEnd" />
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <TextView
+                    android:id="@+id/start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.MaterialComponents.Overline"
+                    android:text="Start "/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextAppearance.MaterialComponents.Overline"
+                    android:text="End "
+                    android:layout_below="@+id/start"/>
+
+                <TextView
+                    android:id="@+id/textViewWaktuJadwalStart"
+                    style="@style/TextAppearance.MaterialComponents.Overline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="17 : 40"
+                    android:layout_toRightOf="@id/start"
+                    android:textAlignment="textEnd" />
+
+                <TextView
+                    android:id="@+id/textViewWaktuJadwalEnd"
+                    style="@style/TextAppearance.MaterialComponents.Overline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/start"
+                    android:layout_below="@+id/textViewWaktuJadwalStart"
+                    android:text="17 : 50"
+                    android:textAlignment="textEnd" />
+
+
+            </RelativeLayout>
+
+        </LinearLayout>
+    </RelativeLayout>
+
 
 </androidx.cardview.widget.CardView>

@@ -1,45 +1,23 @@
 package com.example.bukukuliah.ui.jadwal;
 
 
-import android.app.AlertDialog;
-import android.app.DatePickerDialog;
-import android.app.TimePickerDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.example.bukukuliah.R;
+
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.bukukuliah.FirebaseHelper;
-import com.example.bukukuliah.R;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -47,19 +25,24 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private List<Jadwal> jadwalList;
     private static final int TYPE_NEW_JADWAL = 1;
     private static final int TYPE_JADWAL = 2;
-    private FirebaseAuth mAuth;
-    private FirebaseFirestore db;
+
     private View.OnClickListener onClickNewJadwal;
+    private Openjadwal openjadwal;
+
+    interface Openjadwal {
+        void onClickjadwal(String id);
+    }
 
 
 
 
-    public JadwalAdapter(Context context, List<Jadwal> jadwalList, FirebaseAuth mAuth, FirebaseFirestore db, View.OnClickListener onClickNewJadwal) {
+
+
+    public JadwalAdapter(Context context, List<Jadwal> jadwalList, View.OnClickListener onClickNewJadwal, Openjadwal openjadwal) {
         this.context = context;
         this.jadwalList = jadwalList;
-        this.mAuth = mAuth;
-        this.db = db;
         this.onClickNewJadwal = onClickNewJadwal;
+        this.openjadwal = openjadwal;
     }
 
     @NonNull
@@ -81,6 +64,7 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     @Override
     public int getItemViewType(int position) {
+
         if (position == getItemCount() - 1) {
             return TYPE_NEW_JADWAL;
         } else {
@@ -89,7 +73,7 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     @Override
-    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, final int position) {
         switch (holder.getItemViewType()){
             case TYPE_NEW_JADWAL:
                 break;
@@ -100,11 +84,13 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                     Jadwal jadwal = jadwalList.get(position);
                     jadwalViewHolder.txtViewJadwal.setText(jadwal.Judul_kegiatan);
                     jadwalViewHolder.txtViewDeskripsi.setText(jadwal.Deskripsi_kegiatan);
-                    jadwalViewHolder.txtViewHari.setText(jadwal.Hari_Kegiatan);
-                    jadwalViewHolder.txtViewWaktu.setText(jadwal.Waktu_kegiatan);
+                    jadwalViewHolder.txtViewHari.setText(jadwal.DayOfWeek+","+jadwal.Hari_Kegiatan);
+                    jadwalViewHolder.txtViewWaktuStart.setText(": "+jadwal.Waktu_kegiatan_START);
+                    jadwalViewHolder.txtViewWaktuEnd.setText(": "+jadwal.Waktu_kegiatan_END);
                     jadwalViewHolder.txtViewLokasi.setText(jadwal.Lokasi_kegiatan);
-                }
 
+                    jadwalViewHolder.bind(jadwal);
+                }
                 break;
         }
 
@@ -121,9 +107,9 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         CardView cardView;
         LinearLayout linearLayout;
-        TextView txtViewJadwal, txtViewDeskripsi, txtViewHari, txtViewWaktu, txtViewLokasi;
+        TextView txtViewJadwal, txtViewDeskripsi, txtViewHari, txtViewWaktuStart, txtViewWaktuEnd, txtViewLokasi;
 
-        public jadwalViewHolder(@NonNull View itemView) {
+        public jadwalViewHolder(@NonNull View itemView ) {
             super(itemView);
 
             cardView = itemView.findViewById(R.id.card_jadwal);
@@ -131,8 +117,20 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             txtViewJadwal = itemView.findViewById(R.id.textViewJudulJadwal);
             txtViewDeskripsi = itemView.findViewById(R.id.textViewDeskripsiJadwal);
             txtViewHari = itemView.findViewById(R.id.textViewHariJadwal);
-            txtViewWaktu = itemView.findViewById(R.id.textViewWaktuJadwal);
+            txtViewWaktuStart = itemView.findViewById(R.id.textViewWaktuJadwalStart);
+            txtViewWaktuEnd = itemView.findViewById(R.id.textViewWaktuJadwalEnd);
             txtViewLokasi = itemView.findViewById(R.id.textViewLokasiJadwal);
+
+        }
+
+        void bind(final Jadwal jadwal){
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    openjadwal.onClickjadwal(jadwal.Jadwal_id);
+                }
+            });
+
         }
     }
 
@@ -150,5 +148,6 @@ public class JadwalAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
             itemView.setOnClickListener(onClickListener);
         }
     }
+
 
 }
