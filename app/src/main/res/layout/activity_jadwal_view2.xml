@@ -4,15 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.jadwal.JadwalView2"
+    android:layout_margin="14dp"
     android:padding="8dp"
-    android:layout_margin="14dp">
+    tools:context=".ui.jadwal.JadwalView2">
 
     <ProgressBar
+        android:id="@+id/progressbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:id="@+id/progressbar">
+        android:layout_centerInParent="true">
 
     </ProgressBar>
 
@@ -57,7 +57,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
 
-
             <RelativeLayout
                 android:id="@+id/relativeLayout"
                 android:layout_width="match_parent"
@@ -68,55 +67,52 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="21dp"
-                    android:text="Select Date"
-                    />
+                    android:text="Select Date" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/input_date_kegiatan"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_margin="5dp"
-                    android:layout_toRightOf="@+id/textViewSelectDate"/>
+                    android:layout_toRightOf="@+id/textViewSelectDate" />
 
 
                 <TextView
-                    android:layout_below="@+id/textViewSelectDate"
                     android:id="@+id/textViewSelectTimeStart"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/textViewSelectDate"
                     android:padding="20dp"
-                    android:text="Time Start  "
-                    />
+                    android:text="Time Start  " />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/input_time_start_kegiatan"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text=""
-                    android:layout_margin="5dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_below="@+id/textViewSelectDate"
-                    android:layout_toRightOf="@+id/textViewSelectDate"/>
+                    android:layout_margin="5dp"
+                    android:layout_toRightOf="@+id/textViewSelectDate"
+                    android:text="" />
 
                 <TextView
-                    android:layout_below="@+id/textViewSelectTimeStart"
                     android:id="@+id/textViewSelectTimeEnd"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_below="@+id/textViewSelectTimeStart"
                     android:padding="20dp"
-                    android:text="Time End    "
-                    />
+                    android:text="Time End    " />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/input_time_end_kegiatan"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text=""
-                    android:layout_margin="5dp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                     android:layout_below="@+id/textViewSelectTimeStart"
-                    android:layout_toRightOf="@+id/textViewSelectDate"/>
-
+                    android:layout_margin="5dp"
+                    android:layout_toRightOf="@+id/textViewSelectDate"
+                    android:text="" />
 
 
             </RelativeLayout>
@@ -139,8 +135,7 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                >
+                android:gravity="center">
 
 
                 <com.google.android.material.button.MaterialButton
@@ -148,14 +143,17 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
-                    android:text="Delete"/>
+                    android:text="DELETE"
+                    />
+
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/edit_jadwal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="5dp"
                     android:layout_toRightOf="@+id/delete_jadwal"
-                    android:text="Edit"/>
+                    android:text="EDIT" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>

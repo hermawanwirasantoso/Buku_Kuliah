@@ -14,7 +14,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="150dp">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/linearlayout"
@@ -41,6 +41,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:layout_alignParentEnd="true"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_toRightOf="@+id/linearlayout"
@@ -77,6 +78,7 @@
                     android:id="@+id/start"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+
                     style="@style/TextAppearance.MaterialComponents.Overline"
                     android:text="Start "/>
                 <TextView

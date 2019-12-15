@@ -97,6 +97,7 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
         jadwalList = new ArrayList<>();
 
         initFireStore();
+        checkPermission();
 
 
         recyclerView = (RecyclerView) root.findViewById(R.id.jadwalRecycleView);
@@ -123,6 +124,39 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
 
 
         startActivity(intent);
+
+    }
+
+    private void checkPermission(){
+        if (context.checkSelfPermission(Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions((Activity) context,
+                    new String[]{Manifest.permission.READ_CALENDAR}, MY_PERMISSION_READ_CALENDAR);
+
+
+        }
+
+        if (context.checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions((Activity) context,
+                    new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSION_WRITE_CALENDAR);
+
+
+        }
 
     }
 
@@ -241,6 +275,7 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
 
 
         mBuilder.setView(dialogView);
+        mBuilder.setTitle("Tambah Jadwal Baru");
         mBuilder.setPositiveButton("Tambah", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -291,8 +326,17 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
 
             }
         });
-        AlertDialog dialog = mBuilder.create();
+        final AlertDialog dialog = mBuilder.create();
         dialog.show();
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface arg0) {
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                        .setHintTextColor(getResources().getColor(R.color.colorAccent));
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.white));
+
+            }
+        });
 
 
     }
@@ -300,35 +344,6 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
     private void addToCalendar(Map<String, Object> jadwal, String id) {
 
 
-        if (context.checkSelfPermission(Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-
-            ActivityCompat.requestPermissions((Activity) context,
-                    new String[]{Manifest.permission.READ_CALENDAR}, MY_PERMISSION_READ_CALENDAR);
-
-
-        }
-
-        if (context.checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-
-            ActivityCompat.requestPermissions((Activity) context,
-                    new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSION_WRITE_CALENDAR);
-
-
-        }
 
 
         long calID = 3;

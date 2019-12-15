@@ -94,15 +94,8 @@ public class JadwalView2 extends AppCompatActivity {
         progressBar = findViewById(R.id.progressbar);
 
         initFireStore();
+        checkPermission();
         getUserInformation();
-
-
-
-
-
-
-
-
 
 
         txtHari.setOnClickListener(new View.OnClickListener() {
@@ -322,6 +315,39 @@ public class JadwalView2 extends AppCompatActivity {
 
     }
 
+    private void checkPermission(){
+        if (checkSelfPermission(Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions( JadwalView2.this,
+                    new String[]{Manifest.permission.READ_CALENDAR}, MY_PERMISSION_READ_CALENDAR);
+
+
+        }
+
+        if (checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    Activity#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for Activity#requestPermissions for more details.
+
+            ActivityCompat.requestPermissions( JadwalView2.this,
+                    new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSION_WRITE_CALENDAR);
+
+
+        }
+
+    }
+
     private void deleteCalendar(Long eventID) {
         ContentResolver cr = getContentResolver();
         Uri deleteUri = null;
@@ -365,36 +391,6 @@ public class JadwalView2 extends AppCompatActivity {
         endTime.clear();
         endTime.set(year, month, day, hourEnd, minuteEnd);
         endMillis = endTime.getTimeInMillis();
-
-        if (checkSelfPermission(Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-
-            ActivityCompat.requestPermissions( JadwalView2.this,
-                    new String[]{Manifest.permission.READ_CALENDAR}, MY_PERMISSION_READ_CALENDAR);
-
-
-        }
-
-        if (checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-
-            ActivityCompat.requestPermissions( JadwalView2.this,
-                    new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSION_WRITE_CALENDAR);
-
-
-        }
 
         ContentResolver cr = getContentResolver();
         ContentValues new_values = new ContentValues();
