@@ -136,6 +136,7 @@ public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
 
     private void getBookFromFireStore(){
         reference.collection(COLLECTION_BUKU)
+                .orderBy(JUDUL_BUKU)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
