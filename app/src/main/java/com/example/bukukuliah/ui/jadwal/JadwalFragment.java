@@ -100,7 +100,7 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
         checkPermission();
 
 
-        recyclerView = (RecyclerView) root.findViewById(R.id.jadwalRecycleView);
+        recyclerView = root.findViewById(R.id.jadwalRecycleView);
         progressBar = root.findViewById(R.id.progressbar);
 
         adapter = new JadwalAdapter(context, jadwalList, new View.OnClickListener() {
@@ -127,15 +127,9 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
 
     }
 
-    private void checkPermission(){
+    private void checkPermission() {
         if (context.checkSelfPermission(Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
+
 
             ActivityCompat.requestPermissions((Activity) context,
                     new String[]{Manifest.permission.READ_CALENDAR}, MY_PERMISSION_READ_CALENDAR);
@@ -219,16 +213,16 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
                         new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                Log.d("TEST", "onTimeSet: "+hourOfDay);
+                                Log.d("TEST", "onTimeSet: " + hourOfDay);
 
-                                if (minute<10 && hourOfDay <10){
-                                    waktuKegiatanStart.setText("0"+hourOfDay+":"+"0"+minute);
-                                }else if(minute<10 && hourOfDay>=10){
-                                    waktuKegiatanStart.setText(hourOfDay+":"+"0"+minute);
-                                }else if(minute>=10 && hourOfDay<10){
-                                    waktuKegiatanStart.setText("0"+hourOfDay+":"+minute);
-                                }else if (minute>=10 && hourOfDay >=10){
-                                    waktuKegiatanStart.setText(hourOfDay+":"+minute);
+                                if (minute < 10 && hourOfDay < 10) {
+                                    waktuKegiatanStart.setText("0" + hourOfDay + ":" + "0" + minute);
+                                } else if (minute < 10 && hourOfDay >= 10) {
+                                    waktuKegiatanStart.setText(hourOfDay + ":" + "0" + minute);
+                                } else if (minute >= 10 && hourOfDay < 10) {
+                                    waktuKegiatanStart.setText("0" + hourOfDay + ":" + minute);
+                                } else if (minute >= 10 && hourOfDay >= 10) {
+                                    waktuKegiatanStart.setText(hourOfDay + ":" + minute);
                                 }
 
                             }
@@ -254,14 +248,14 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
-                                if (minute<10 && hourOfDay <10){
-                                    waktuKegiatanEnd.setText("0"+hourOfDay+":"+"0"+minute);
-                                }else if(minute<10 && hourOfDay>=10){
-                                    waktuKegiatanEnd.setText(hourOfDay+":"+"0"+minute);
-                                }else if(minute>=10 && hourOfDay<10){
-                                    waktuKegiatanEnd.setText("0"+hourOfDay+":"+minute);
-                                }else if (minute>=10 && hourOfDay >=10){
-                                    waktuKegiatanEnd.setText(hourOfDay+":"+minute);
+                                if (minute < 10 && hourOfDay < 10) {
+                                    waktuKegiatanEnd.setText("0" + hourOfDay + ":" + "0" + minute);
+                                } else if (minute < 10 && hourOfDay >= 10) {
+                                    waktuKegiatanEnd.setText(hourOfDay + ":" + "0" + minute);
+                                } else if (minute >= 10 && hourOfDay < 10) {
+                                    waktuKegiatanEnd.setText("0" + hourOfDay + ":" + minute);
+                                } else if (minute >= 10 && hourOfDay >= 10) {
+                                    waktuKegiatanEnd.setText(hourOfDay + ":" + minute);
                                 }
 
                             }
@@ -330,117 +324,126 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
         dialog.show();
     }
 
+    private String[] permissions = {Manifest.permission.WRITE_CALENDAR, Manifest.permission.READ_CALENDAR};
+    private static final int REQUEST_WRITE_CALENDAR_PERMISSION = 300;
+
     private void addToCalendar(Map<String, Object> jadwal, String id) {
+        if (context.checkSelfPermission(Manifest.permission.WRITE_CALENDAR)
+                != PackageManager.PERMISSION_GRANTED) {
 
-        long calID = 3;
-        long startMillis = 0;
-        long endMillis = 0;
+            ActivityCompat.requestPermissions(getActivity(),
+                    permissions,
+                    REQUEST_WRITE_CALENDAR_PERMISSION);
 
-        String date = jadwal.get(TANGGAL_KEGIATAN).toString();
-        String timeStart = jadwal.get(WAKTU_KEGIATAN_START).toString();
-        String timeEnd = jadwal.get(WAKTU_KEGIATAN_END).toString();
+        } else {
+            long calID = 3;
+            long startMillis = 0;
+            long endMillis = 0;
 
-        String[] dateParts = date.split("-");
-        Integer day = Integer.parseInt(dateParts[0]);
-        Integer month = Integer.parseInt(dateParts[1]);
-        month = month - 1;
-        Integer year = Integer.parseInt(dateParts[2]);
+            String date = jadwal.get(TANGGAL_KEGIATAN).toString();
+            String timeStart = jadwal.get(WAKTU_KEGIATAN_START).toString();
+            String timeEnd = jadwal.get(WAKTU_KEGIATAN_END).toString();
 
-        String[] timeStartParts = timeStart.split(":");
-        Integer hourStart = Integer.parseInt(timeStartParts[0]);
-        Integer minuteStart = Integer.parseInt(timeStartParts[1]);
+            String[] dateParts = date.split("-");
+            Integer day = Integer.parseInt(dateParts[0]);
+            Integer month = Integer.parseInt(dateParts[1]);
+            month = month - 1;
+            Integer year = Integer.parseInt(dateParts[2]);
 
-        String[] timeEndParts = timeEnd.split(":");
-        Integer hourEnd = Integer.parseInt(timeEndParts[0]);
-        Integer minuteEnd = Integer.parseInt(timeEndParts[1]);
+            String[] timeStartParts = timeStart.split(":");
+            Integer hourStart = Integer.parseInt(timeStartParts[0]);
+            Integer minuteStart = Integer.parseInt(timeStartParts[1]);
 
-        Calendar dayofWeek = Calendar.getInstance();
-        dayofWeek.clear();
-        dayofWeek.set(year, month, day);
-        Integer intDayofWeek = dayofWeek.get(Calendar.DAY_OF_WEEK);
-        String DayOfWeek;
-        switch (intDayofWeek) {
-            case 1:
-                DayOfWeek = "Sun";
-                break;
-            case 2:
-                DayOfWeek = "Mon";
-                break;
-            case 3:
-                DayOfWeek = "Tue";
-                break;
-            case 4:
-                DayOfWeek = "Wed";
-                break;
-            case 5:
-                DayOfWeek = "Thu";
-                break;
-            case 6:
-                DayOfWeek = "Fri";
-                break;
-            case 7:
-                DayOfWeek = "Sat";
-                break;
-            default:
-                DayOfWeek = "";
-        }
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-        Calendar beginTime = Calendar.getInstance(utc);
-        beginTime.clear();
-        beginTime.set(year, month, day, hourStart, minuteStart);
-        startMillis = beginTime.getTimeInMillis();
+            String[] timeEndParts = timeEnd.split(":");
+            Integer hourEnd = Integer.parseInt(timeEndParts[0]);
+            Integer minuteEnd = Integer.parseInt(timeEndParts[1]);
 
-
-        Calendar endTime = Calendar.getInstance(utc);
-        endTime.clear();
-        endTime.set(year, month, day, hourEnd, minuteEnd);
-        endMillis = endTime.getTimeInMillis();
-
-
-        ContentResolver cr2 = context.getContentResolver();
-        ContentValues values = new ContentValues();
-        values.put(CalendarContract.Events.DTSTART, startMillis);
-        values.put(CalendarContract.Events.DTEND, endMillis);
-        values.put(CalendarContract.Events.TITLE, jadwal.get(JUDUL_KEGIATAN).toString());
-        values.put(CalendarContract.Events.DESCRIPTION, jadwal.get(DESKRIPSI_KEGIATAN).toString());
-        values.put(CalendarContract.Events.CALENDAR_ID, calID);
-        values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY");
-        values.put(CalendarContract.Events.EVENT_LOCATION, jadwal.get(LOKASI_KEGIATAN).toString());
-        values.put(CalendarContract.Events.EVENT_TIMEZONE, "Asia/Jakarta");
-        values.put(CalendarContract.Events.HAS_ALARM, "1");
-        Uri uri2 = cr2.insert(CalendarContract.Events.CONTENT_URI, values);
-
-
-
-        // get the event ID that is the last element in the Uri
-        long eventID = Long.parseLong(uri2.getLastPathSegment());
-        values = new ContentValues();
-        values.put( "event_id", eventID);
-        values.put( "method", 1 );
-        values.put( "minutes", 15 );
-        cr2.insert(CalendarContract.Reminders.CONTENT_URI, values);
-
-
-
-        final Map<String, Object> event = new HashMap<String, Object>();
-        event.put(EVENT_ID, eventID);
-        event.put(DAY_OF_WEEK, DayOfWeek);
-        reference
-                .collection(COLLECTION_JADWAL)
-                .document(id)
-                .update(event)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(context, "Calendar : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Calendar dayofWeek = Calendar.getInstance();
+            dayofWeek.clear();
+            dayofWeek.set(year, month, day);
+            Integer intDayofWeek = dayofWeek.get(Calendar.DAY_OF_WEEK);
+            String DayOfWeek;
+            switch (intDayofWeek) {
+                case 1:
+                    DayOfWeek = "Sun";
+                    break;
+                case 2:
+                    DayOfWeek = "Mon";
+                    break;
+                case 3:
+                    DayOfWeek = "Tue";
+                    break;
+                case 4:
+                    DayOfWeek = "Wed";
+                    break;
+                case 5:
+                    DayOfWeek = "Thu";
+                    break;
+                case 6:
+                    DayOfWeek = "Fri";
+                    break;
+                case 7:
+                    DayOfWeek = "Sat";
+                    break;
+                default:
+                    DayOfWeek = "";
             }
-        });
+            TimeZone utc = TimeZone.getTimeZone("UTC");
+            Calendar beginTime = Calendar.getInstance(utc);
+            beginTime.clear();
+            beginTime.set(year, month, day, hourStart, minuteStart);
+            startMillis = beginTime.getTimeInMillis();
 
+
+            Calendar endTime = Calendar.getInstance(utc);
+            endTime.clear();
+            endTime.set(year, month, day, hourEnd, minuteEnd);
+            endMillis = endTime.getTimeInMillis();
+
+
+            ContentResolver cr2 = context.getContentResolver();
+            ContentValues values = new ContentValues();
+            values.put(CalendarContract.Events.DTSTART, startMillis);
+            values.put(CalendarContract.Events.DTEND, endMillis);
+            values.put(CalendarContract.Events.TITLE, jadwal.get(JUDUL_KEGIATAN).toString());
+            values.put(CalendarContract.Events.DESCRIPTION, jadwal.get(DESKRIPSI_KEGIATAN).toString());
+            values.put(CalendarContract.Events.CALENDAR_ID, calID);
+            values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY");
+            values.put(CalendarContract.Events.EVENT_LOCATION, jadwal.get(LOKASI_KEGIATAN).toString());
+            values.put(CalendarContract.Events.EVENT_TIMEZONE, "Asia/Jakarta");
+            values.put(CalendarContract.Events.HAS_ALARM, "1");
+
+            Uri uri2 = cr2.insert(CalendarContract.Events.CONTENT_URI, values);
+
+
+            // get the event ID that is the last element in the Uri
+            long eventID = Long.parseLong(uri2.getLastPathSegment());
+            values = new ContentValues();
+            values.put("event_id", eventID);
+            values.put("method", 1);
+            values.put("minutes", 15);
+            cr2.insert(CalendarContract.Reminders.CONTENT_URI, values);
+
+
+            final Map<String, Object> event = new HashMap<String, Object>();
+            event.put(EVENT_ID, eventID);
+            event.put(DAY_OF_WEEK, DayOfWeek);
+            reference
+                    .collection(COLLECTION_JADWAL)
+                    .document(id)
+                    .update(event)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(context, "Calendar : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 
     }
 
