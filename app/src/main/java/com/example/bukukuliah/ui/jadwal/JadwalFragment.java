@@ -90,10 +90,19 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+
         jadwalViewModel =
                 ViewModelProviders.of(this).get(JadwalViewModel.class);
         View root = inflater.inflate(R.layout.fragment_jadwal, container, false);
         context = root.getContext();
+        if (context.checkSelfPermission(Manifest.permission.WRITE_CALENDAR)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(getActivity(),
+                    permissions,
+                    REQUEST_WRITE_CALENDAR_PERMISSION);
+
+        }
         jadwalList = new ArrayList<>();
 
         initFireStore();
@@ -324,7 +333,7 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
         dialog.show();
     }
 
-    private String[] permissions = {Manifest.permission.WRITE_CALENDAR, Manifest.permission.READ_CALENDAR};
+    private String[] permissions = {Manifest.permission.WRITE_CALENDAR};
     private static final int REQUEST_WRITE_CALENDAR_PERMISSION = 300;
 
     private void addToCalendar(Map<String, Object> jadwal, String id) {
