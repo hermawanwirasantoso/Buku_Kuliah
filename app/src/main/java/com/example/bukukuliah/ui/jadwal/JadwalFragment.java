@@ -328,23 +328,9 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
         });
         final AlertDialog dialog = mBuilder.create();
         dialog.show();
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface arg0) {
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                        .setHintTextColor(getResources().getColor(R.color.colorAccent));
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(getResources().getColor(R.color.white));
-
-            }
-        });
-
-
     }
 
     private void addToCalendar(Map<String, Object> jadwal, String id) {
-
-
-
 
         long calID = 3;
         long startMillis = 0;
