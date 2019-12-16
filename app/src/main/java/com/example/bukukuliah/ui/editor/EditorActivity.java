@@ -1111,6 +1111,8 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     private void previousPage() {
         if (currentPage > 0) {
             catatanList.get(currentPage).content = mainEditor.getText().toString();
+            SpannableStringBuilder span = new SpannableStringBuilder(mainEditor.getText());
+            catatanList.get(currentPage).HTMLtext = Html.toHtml(span);
             currentPage--;
             updateHalaman();
             makeToast("Previous Page");
@@ -1118,8 +1120,10 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void nextPage() {
-        if (currentPage < catatanList.size() - 1) {
+        if (currentPage < catatanList.size()-1) {
             catatanList.get(currentPage).content = mainEditor.getText().toString();
+            SpannableStringBuilder span = new SpannableStringBuilder(mainEditor.getText());
+            catatanList.get(currentPage).HTMLtext = Html.toHtml(span);
             currentPage++;
             updateHalaman();
             makeToast("Next Page");
@@ -1207,24 +1211,27 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                         }
                     });
         }else {
-            catatanList.remove(currentPage);
-            currentPage--;
-            for (int i=0;i<catatanList.size();i++){
-                catatanList.get(i).page = String.valueOf(i);
-            }
-            updateHalaman();
+            updateNomorHalaman();
         }
     }
 
     private void updateNomorHalaman() {
-        catatanList.remove(currentPage);
-        currentPage--;
-        for (int i=0;i<catatanList.size();i++){
-            catatanList.get(i).page = String.valueOf(i);
+        if (catatanList.size()>1) {
+            catatanList.remove(currentPage);
+            if (currentPage>0)
+                currentPage--;
+            for (int i = 0; i < catatanList.size(); i++) {
+                catatanList.get(i).page = String.valueOf(i);
+            }
+        }else {
+            catatanList.remove(currentPage);
+            currentPage =0;
+            Catatan initialNote = new Catatan(null, String.valueOf(currentPage)
+                    , "",
+                    Timestamp.now(), null);
+            catatanList.add(initialNote);
         }
         updateHalaman();
-        getBookContent();
-        saveCatatan();
     }
 
     @Override
