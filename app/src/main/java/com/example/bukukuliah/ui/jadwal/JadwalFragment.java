@@ -137,29 +137,16 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
     }
 
     private void checkPermission() {
-        if (context.checkSelfPermission(Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-
-
-            ActivityCompat.requestPermissions((Activity) context,
-                    new String[]{Manifest.permission.READ_CALENDAR}, MY_PERMISSION_READ_CALENDAR);
-
-
-        }
-
         if (context.checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-
             ActivityCompat.requestPermissions((Activity) context,
                     new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSION_WRITE_CALENDAR);
-
-
         }
+        if (context.checkSelfPermission(Manifest.permission.WRITE_CALENDAR)
+                != PackageManager.PERMISSION_GRANTED)
+
+            ActivityCompat.requestPermissions(getActivity(),
+                    permissions,
+                    REQUEST_WRITE_CALENDAR_PERMISSION);
 
     }
 
@@ -343,8 +330,8 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
             ActivityCompat.requestPermissions(getActivity(),
                     permissions,
                     REQUEST_WRITE_CALENDAR_PERMISSION);
+        }
 
-        } else {
             long calID = 3;
             long startMillis = 0;
             long endMillis = 0;
@@ -452,7 +439,7 @@ public class JadwalFragment extends Fragment implements JadwalAdapter.Openjadwal
                     Toast.makeText(context, "Calendar : " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
-        }
+
 
     }
 
