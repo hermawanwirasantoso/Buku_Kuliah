@@ -33,12 +33,14 @@ public class FirebaseHelper {
     public static final String DESC_GAMBAR = "desc_gambar";
     public static final String TIMESTAMP_GAMBAR = "timestamp_gambar";
     public static final String PAGE_GAMBAR = "page_gambar";
+    public static final String FILENAME_GAMBAR = "filename_gambar";
 
     public static final String COLLECTION_AUDIO = "audio";
     public static final String URL_AUDIO = "url_audio";
     public static final String DESC_AUDIO = "desc_audio";
     public static final String TIMESTAMP_AUDIO = "timestamp_audio";
     public static final String PAGE_AUDIO = "page_audio";
+    public static final String FILENAME_AUDIO = "filename_audio";
 
 
     public static final String STORAGE_SAVED_USERS = "users/";

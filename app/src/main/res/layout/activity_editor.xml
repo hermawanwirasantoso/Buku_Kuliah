@@ -126,6 +126,14 @@
             app:icon="@drawable/ic_record_voice_over_black_24dp" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/menu_normal"
+            style="@style/IconOnlyButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_format_clear_24px" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_bold"
             style="@style/IconOnlyButton"
             android:layout_width="0dp"

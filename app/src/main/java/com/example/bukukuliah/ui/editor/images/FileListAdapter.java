@@ -26,12 +26,21 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ImageL
     private LayoutInflater layoutInflater;
     public static final String INTENT_IMAGE_URL = "intentimageurl";
     private MediaPlayer player;
+    private FileEditor fileEditor;
+    private FileListAdapter  fileListAdapter;
 
-    public FileListAdapter(Context context, List<SavedFile> savedFileList, MediaPlayer player) {
+    public interface FileEditor{
+        void deleteImage(String imageName, String uid);
+        void deleteVoice(String audioFilename, String uid);
+    }
+
+    public FileListAdapter(Context context, List<SavedFile> savedFileList, MediaPlayer player, FileEditor fileEditor) {
         this.context = context;
         this.savedFileList = savedFileList;
         this.layoutInflater = LayoutInflater.from(context);
         this.player = player;
+        this.fileEditor = fileEditor;
+        this.fileListAdapter = this;
     }
 
     @NonNull
@@ -77,6 +86,14 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ImageL
                         context.startActivity(intent);
                     }
                 });
+                itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        fileEditor.deleteImage(savedFile.name, savedFile.uid);
+
+                        return true;
+                    }
+                });
             } else {
                 imageItem.setImageResource(R.drawable.ic_audiotrack_black_24dp);
                 itemView.setOnClickListener(new View.OnClickListener() {
@@ -92,6 +109,13 @@ public class FileListAdapter extends RecyclerView.Adapter<FileListAdapter.ImageL
                             e.printStackTrace();
                         }
 
+                    }
+                });
+                itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        fileEditor.deleteVoice(savedFile.name, savedFile.uid);
+                        return true;
                     }
                 });
             }

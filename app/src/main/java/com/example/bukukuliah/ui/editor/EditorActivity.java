@@ -29,10 +29,8 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
-import android.text.format.DateFormat;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.CharacterStyle;
-import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
@@ -71,8 +69,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -92,6 +88,8 @@ import static com.example.bukukuliah.FirebaseHelper.COLLECTION_USERS;
 import static com.example.bukukuliah.FirebaseHelper.CONTENT_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.DESC_AUDIO;
 import static com.example.bukukuliah.FirebaseHelper.DESC_GAMBAR;
+import static com.example.bukukuliah.FirebaseHelper.FILENAME_AUDIO;
+import static com.example.bukukuliah.FirebaseHelper.FILENAME_GAMBAR;
 import static com.example.bukukuliah.FirebaseHelper.HTML_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.PAGE_AUDIO;
 import static com.example.bukukuliah.FirebaseHelper.PAGE_CATATAN;
@@ -106,10 +104,11 @@ import static com.example.bukukuliah.ui.buku.BukuFragment.INTENT_ID_BUKU;
 import static com.example.bukukuliah.ui.buku.BukuFragment.INTENT_JUDUL_BUKU;
 
 
-public class EditorActivity extends AppCompatActivity implements View.OnClickListener {
+public class EditorActivity extends AppCompatActivity implements View.OnClickListener, FileListAdapter.FileEditor {
 
     private MaterialButton prevButton, nextButton, newPageButton, boldButton, italicButton,
-            underlineButton, highlightButton, addImageButton, addVoiceButton, showImageButton, showAudioButton;
+            underlineButton, highlightButton, addImageButton, addVoiceButton, showImageButton, showAudioButton,
+    clearFormatButton;
     private TextInputEditText mainEditor;
     private boolean isEditMode;
     private String key;
@@ -119,7 +118,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     private TextView pageInfoTextView, dateTextView;
     private DocumentReference reference;
     private StorageReference imageStorageRef, audioStorageRef;
-    private CharacterStyle bold, italic, underline, highlight;
+    private CharacterStyle normal, bold, italic, underline, highlight;
 
     //AUDIO
     static final int REQUEST_AUDIO_RECORD = 3;
@@ -143,6 +142,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         isEditMode = false;
         currentPage = 0;
         pictureCount = 0;
+        normal = new StyleSpan(Typeface.NORMAL);
         bold = new StyleSpan(Typeface.BOLD);
         italic = new StyleSpan(Typeface.ITALIC);
         underline = new UnderlineSpan();
@@ -252,6 +252,8 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         showImageButton.setOnClickListener(this);
         showAudioButton = findViewById(R.id.media_records);
         showAudioButton.setOnClickListener(this);
+        clearFormatButton = findViewById(R.id.menu_normal);
+        clearFormatButton.setOnClickListener(this);
     }
 
     @Override
@@ -291,6 +293,43 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.menu_highlight:
                 selectedTextToHighlight();
                 break;
+            case R.id.menu_normal:
+                selectedTextToNormal();
+                break;
+        }
+    }
+
+    private void selectedTextToNormal() {
+        if (mainEditor.getText() != null && mainEditor.getText().length() > 0) {
+            int start = mainEditor.getSelectionStart();
+            int end = mainEditor.getSelectionEnd();
+            if (htmlMainEditor==null){
+                htmlMainEditor = mainEditor.getText().toString();
+            }
+            if (start!=end){
+                Object[] toRemoveSpans = mainEditor.getText().getSpans(start,
+                        end,
+                        BackgroundColorSpan.class);
+                for (Object toRemoveSpan : toRemoveSpans) {
+                    mainEditor.getText().removeSpan(toRemoveSpan);
+                }
+                toRemoveSpans = mainEditor.getText().getSpans(start,
+                        end,
+                        StyleSpan.class);
+                for (Object toRemoveSpan : toRemoveSpans) {
+                    mainEditor.getText().removeSpan(toRemoveSpan);
+                }
+                toRemoveSpans = mainEditor.getText().getSpans(start,
+                        end,
+                        UnderlineSpan.class);
+                for (Object toRemoveSpan : toRemoveSpans) {
+                    mainEditor.getText().removeSpan(toRemoveSpan);
+                }
+                SpannableStringBuilder sb = new SpannableStringBuilder(mainEditor.getText());
+                htmlMainEditor = Html.toHtml(sb);
+                mainEditor.setText(Html.fromHtml(htmlMainEditor));
+                mainEditor.setSelection(end);
+            }
         }
     }
 
@@ -360,24 +399,76 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    @Override
+    public void deleteVoice(final String audioFilename, final String uid) {
+        new AlertDialog.Builder(this).setTitle("Hapus Audio")
+                .setMessage("Apakah Anda Yakin Ingin Menghapus Audio Ini")
+                .setPositiveButton("Konfirmasi", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        audioStorageRef.child("audios/"
+                                + key
+                                + "/"
+                                + audioFilename).delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                makeToast("Berhasil Menghapus Audio");
+                                deleteVoiceFromFireStore(uid);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                makeToast(e.getMessage());
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+    }
+
+    private void deleteVoiceFromFireStore(String uid){
+        reference.collection(COLLECTION_BUKU).document(key)
+                .collection(COLLECTION_AUDIO)
+                .document(uid)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        makeToast("Berhasil Hapus Dari FireStore");
+                        getAudioList(null, isWholeBook);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        makeToast(e.getMessage());
+                    }
+                });
+    }
+
     private void audioListDialog() {
         View picturesView = getLayoutInflater().inflate(R.layout.dialog_list_of_picture, null);
         RecyclerView pictureRecycleView = picturesView.findViewById(R.id.images_recycleview);
         final ProgressBar pictureListProgressbar = picturesView.findViewById(R.id.images_list_progressbar);
         final CheckBox wholeBookCheckBox = picturesView.findViewById(R.id.checkbox_whole_book);
-        final List<SavedFile> audioList = new ArrayList<>();
+        wholeBookCheckBox.setText("Muat Semua Audio Dari Buku Ini");
+        savedFileList = new ArrayList<>();
         final MediaPlayer mediaPlayer = new MediaPlayer();
-        final FileListAdapter adapter = new FileListAdapter(this, audioList, mediaPlayer);
+        fileListAdapter = new FileListAdapter(this, savedFileList, mediaPlayer, this);
         wholeBookCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                getAudioList(audioList, adapter, pictureListProgressbar, wholeBookCheckBox.isChecked());
+                isWholeBook = wholeBookCheckBox.isChecked();
+                getAudioList(pictureListProgressbar, wholeBookCheckBox.isChecked());
             }
         });
         pictureRecycleView.setLayoutManager(new LinearLayoutManager(this));
-        pictureRecycleView.setAdapter(adapter);
+        pictureRecycleView.setAdapter(fileListAdapter);
         new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.daftar_gambar))
+                .setTitle("Daftar Audio")
                 .setView(picturesView)
                 .setPositiveButton("Ok", null)
                 .setOnDismissListener(new DialogInterface.OnDismissListener() {
@@ -387,11 +478,12 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                     }
                 })
                 .show();
-        getAudioList(audioList, adapter, pictureListProgressbar, wholeBookCheckBox.isChecked());
+        getAudioList(pictureListProgressbar, wholeBookCheckBox.isChecked());
     }
 
-    private void getAudioList(final List<SavedFile> audioList, final FileListAdapter adapter, final ProgressBar pictureListProgressbar, final boolean isWholeBook) {
-        pictureListProgressbar.setVisibility(View.VISIBLE);
+    private void getAudioList(final ProgressBar pictureListProgressbar, final boolean isWholeBook) {
+        if (pictureListProgressbar!=null)
+            pictureListProgressbar.setVisibility(View.VISIBLE);
         reference.collection(COLLECTION_BUKU).document(key)
                 .collection(COLLECTION_AUDIO)
                 .get()
@@ -400,25 +492,30 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             if (task.getResult() != null) {
-                                audioList.clear();
+                                savedFileList.clear();
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     Map<String, Object> temp = document.getData();
                                     if (!isWholeBook) {
                                         if ((long) temp.get(PAGE_AUDIO) == currentPage) {
-                                            audioList.add(new SavedFile(temp.get(URL_AUDIO).toString(),
+                                            savedFileList.add(new SavedFile(temp.get(URL_AUDIO).toString(),
                                                     temp.get(DESC_AUDIO).toString(),
                                                     (Timestamp) temp.get(TIMESTAMP_AUDIO),
-                                                    (long) temp.get(PAGE_AUDIO)));
+                                                    (long) temp.get(PAGE_AUDIO),
+                                                    temp.get(FILENAME_AUDIO).toString(),
+                                                    document.getId()));
                                         }
                                     } else {
-                                        audioList.add(new SavedFile(temp.get(URL_AUDIO).toString(),
+                                        savedFileList.add(new SavedFile(temp.get(URL_AUDIO).toString(),
                                                 temp.get(DESC_AUDIO).toString(),
                                                 (Timestamp) temp.get(TIMESTAMP_AUDIO),
-                                                (long) temp.get(PAGE_AUDIO)));
+                                                (long) temp.get(PAGE_AUDIO),
+                                                temp.get(FILENAME_AUDIO).toString(),
+                                                document.getId()));
                                     }
                                 }
-                                adapter.notifyDataSetChanged();
-                                pictureListProgressbar.setVisibility(View.INVISIBLE);
+                                fileListAdapter.notifyDataSetChanged();
+                                if (pictureListProgressbar!=null)
+                                    pictureListProgressbar.setVisibility(View.INVISIBLE);
                             }
                         } else {
                             makeToast("Gagal Mengambil Data Gambar");
@@ -592,34 +689,90 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     }
 
 
+    @Override
+    public void deleteImage(final String imageFilename, final String uid) {
+        new AlertDialog.Builder(this).setTitle("Hapus Gambar")
+                .setMessage("Apakah Anda Yakin Ingin Menghapus Gambar Ini?")
+                .setPositiveButton("Konfirmasi", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        imageStorageRef.child("images/"
+                                + key
+                                + "/"
+                                + imageFilename).delete()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                makeToast("Berhasil Menghapus Gambar");
+                                deleteImageFromFireStore(uid);
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                makeToast(e.getMessage());
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+    }
+
+    private void deleteImageFromFireStore(String uid) {
+        reference.collection(COLLECTION_BUKU).document(key)
+                .collection(COLLECTION_GAMBAR)
+                .document(uid)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        makeToast("Berhasil Hapus Dari FireStore");
+                        getImagesList(null, isWholeBook);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        makeToast(e.getMessage());
+                    }
+                });
+    }
+
+    private FileListAdapter fileListAdapter;
+    private List<SavedFile> savedFileList;
+    private boolean isWholeBook;
+
     private void pictureListDialog() {
         View picturesView = getLayoutInflater().inflate(R.layout.dialog_list_of_picture, null);
         RecyclerView pictureRecycleView = picturesView.findViewById(R.id.images_recycleview);
         final ProgressBar pictureListProgressbar = picturesView.findViewById(R.id.images_list_progressbar);
         final CheckBox wholeBookCheckBox = picturesView.findViewById(R.id.checkbox_whole_book);
-        final List<SavedFile> imageList = new ArrayList<>();
-        final FileListAdapter adapter = new FileListAdapter(this, imageList, null);
+        savedFileList = new ArrayList<>();
+        fileListAdapter = new FileListAdapter(this, savedFileList, null, this);
         wholeBookCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                getImagesList(imageList, adapter, pictureListProgressbar, wholeBookCheckBox.isChecked());
+                isWholeBook = wholeBookCheckBox.isChecked();
+                getImagesList(pictureListProgressbar, wholeBookCheckBox.isChecked());
             }
         });
         pictureRecycleView.setLayoutManager(new LinearLayoutManager(this));
-        pictureRecycleView.setAdapter(adapter);
+        pictureRecycleView.setAdapter(fileListAdapter);
         new AlertDialog.Builder(this)
                 .setTitle(getString(R.string.daftar_gambar))
                 .setView(picturesView)
                 .setPositiveButton("Ok", null)
                 .show();
-        getImagesList(imageList, adapter, pictureListProgressbar, wholeBookCheckBox.isChecked());
+        getImagesList(pictureListProgressbar, wholeBookCheckBox.isChecked());
     }
 
-    private void getImagesList(final List<SavedFile> imageList,
-                               final FileListAdapter adapter,
-                               final ProgressBar pictureListProgressbar,
+
+
+    private void getImagesList(final ProgressBar pictureListProgressbar,
                                final boolean isWholeBook) {
-        pictureListProgressbar.setVisibility(View.VISIBLE);
+        if (pictureListProgressbar!=null)
+            pictureListProgressbar.setVisibility(View.VISIBLE);
         reference.collection(COLLECTION_BUKU).document(key)
                 .collection(COLLECTION_GAMBAR)
                 .get()
@@ -628,25 +781,30 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             if (task.getResult() != null) {
-                                imageList.clear();
+                                savedFileList.clear();
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     Map<String, Object> temp = document.getData();
                                     if (!isWholeBook) {
                                         if ((long) temp.get(PAGE_GAMBAR) == currentPage) {
-                                            imageList.add(new SavedFile(temp.get(URL_GAMBAR).toString(),
+                                            savedFileList.add(new SavedFile(temp.get(URL_GAMBAR).toString(),
                                                     temp.get(DESC_GAMBAR).toString(),
                                                     (Timestamp) temp.get(TIMESTAMP_GAMBAR),
-                                                    (long) temp.get(PAGE_GAMBAR)));
+                                                    (long) temp.get(PAGE_GAMBAR),
+                                                    temp.get(FILENAME_GAMBAR).toString(),
+                                                    document.getId()));
                                         }
                                     } else {
-                                        imageList.add(new SavedFile(temp.get(URL_GAMBAR).toString(),
+                                        savedFileList.add(new SavedFile(temp.get(URL_GAMBAR).toString(),
                                                 temp.get(DESC_GAMBAR).toString(),
                                                 (Timestamp) temp.get(TIMESTAMP_GAMBAR),
-                                                (long) temp.get(PAGE_GAMBAR)));
+                                                (long) temp.get(PAGE_GAMBAR),
+                                                temp.get(FILENAME_GAMBAR).toString(),
+                                                document.getId()));
                                     }
                                 }
-                                adapter.notifyDataSetChanged();
-                                pictureListProgressbar.setVisibility(View.INVISIBLE);
+                                fileListAdapter.notifyDataSetChanged();
+                                if (pictureListProgressbar!=null)
+                                    pictureListProgressbar.setVisibility(View.INVISIBLE);
                             }
                         } else {
                             makeToast("Gagal Mengambil Data Gambar");
@@ -812,7 +970,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 .setTitle("Uploading...")
                 .setView(dialogView)
                 .show();
-        Uri file;
+        final Uri file;
         if (isPhoto) {
             if (uri == null) {
                 file = Uri.fromFile(new File(currentPhotoPath));
@@ -857,9 +1015,9 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 dialog.setTitle("Upload Berhasil");
                 dismissButton.setVisibility(View.VISIBLE);
                 if (isPhoto) {
-                    updateFireStoreGambar(descInput, imageRefs);
+                    updateFireStoreGambar(descInput, imageRefs, file.getLastPathSegment());
                 } else {
-                    updateFireStoreAudio(descInput, audioRefs);
+                    updateFireStoreAudio(descInput, audioRefs, file.getLastPathSegment());
                 }
 
             }
@@ -873,7 +1031,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    private void updateFireStoreAudio(final String descInput, StorageReference audioRefs) {
+    private void updateFireStoreAudio(final String descInput, StorageReference audioRefs, final String filename) {
         progressBar.setVisibility(View.VISIBLE);
         audioRefs.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -883,6 +1041,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 temp.put(URL_AUDIO, uri.toString());
                 temp.put(TIMESTAMP_AUDIO, Timestamp.now());
                 temp.put(PAGE_AUDIO, currentPage);
+                temp.put(FILENAME_AUDIO, filename);
                 reference.collection(COLLECTION_BUKU).document(key)
                         .collection(COLLECTION_AUDIO)
                         .add(temp)
@@ -909,12 +1068,12 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    private void updateFireStoreGambar(final String descInput, StorageReference imageRefs) {
+    private void updateFireStoreGambar(final String descInput, StorageReference imageRefs, final String lastPathSegment) {
         progressBar.setVisibility(View.VISIBLE);
         imageRefs.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(final Uri uri) {
-                putImageDetail(descInput, uri);
+                putImageDetail(descInput, uri, lastPathSegment);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -924,12 +1083,13 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         });
     }
 
-    private void putImageDetail(String descInput, Uri uri) {
+    private void putImageDetail(String descInput, Uri uri, String lastPathSegment) {
         Map<String, Object> temp = new HashMap<>();
         temp.put(DESC_GAMBAR, descInput);
         temp.put(URL_GAMBAR, uri.toString());
         temp.put(TIMESTAMP_GAMBAR, Timestamp.now());
         temp.put(PAGE_GAMBAR, currentPage);
+        temp.put(FILENAME_GAMBAR, lastPathSegment);
         reference.collection(COLLECTION_BUKU).document(key)
                 .collection(COLLECTION_GAMBAR)
                 .add(temp)
@@ -1005,8 +1165,64 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
             case R.id.editor_save:
                 saveCatatan();
                 break;
+            case R.id.editor_delete:
+                hapusCatatanDialog();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void hapusCatatanDialog() {
+        new AlertDialog.Builder(this).setTitle("Hapus Catatan")
+                .setMessage("Apakah Anda Yakin Ingin Menghapus Catatan Ini?")
+                .setPositiveButton("Konfirmasi", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        hapusCatatanFronFireStore();
+                    }
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+
+    }
+
+    private void hapusCatatanFronFireStore() {
+        if (catatanList.get(currentPage).uid!=null) {
+            progressBar.setVisibility(View.VISIBLE);
+            reference.collection(COLLECTION_BUKU).document(key)
+                    .collection(COLLECTION_CATATAN)
+                    .document(catatanList.get(currentPage).uid)
+                    .delete()
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            progressBar.setVisibility(View.GONE);
+                            makeToast("Berhasil Hapus Catatan");
+                            updateNomorHalaman();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            makeToast(e.getMessage());
+                        }
+                    });
+        }else {
+            catatanList.remove(currentPage);
+            currentPage--;
+            for (int i=0;i<catatanList.size();i++){
+                catatanList.get(i).page = String.valueOf(i);
+            }
+            updateHalaman();
+        }
+    }
+
+    private void updateNomorHalaman() {
+        getBookContent();
+        for (int i=0;i<catatanList.size();i++){
+            catatanList.get(i).page = String.valueOf(i);
+        }
+        saveCatatan();
     }
 
     @Override
