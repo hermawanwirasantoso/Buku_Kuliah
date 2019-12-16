@@ -10,6 +10,7 @@ public class FirebaseHelper {
     public static final String CONTENT_CATATAN = "content";
     public static final String PAGE_CATATAN = "page";
     public static final String TANGGAL_CATATAN = "tanggal";
+    public static final String HTML_CATATAN = "html";
 
     public static final String COLLECTION_JADWAL = "jadwal";
     public static final String DOCUMENT_JADWAL = "user_jadwal";

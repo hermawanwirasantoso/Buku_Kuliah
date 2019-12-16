@@ -27,6 +27,7 @@ public class BukuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     interface OpenBuku {
         void onClickBuku(String key, String judul);
+        void onLongClickBuku(Context context,String key, String judul, String desc);
     }
 
     public BukuAdapter(Context context, List<Buku> bukuList, int height, OpenBuku openBuku, View.OnClickListener onClickNewBuku) {
@@ -99,6 +100,13 @@ public class BukuAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 @Override
                 public void onClick(View view) {
                     openBuku.onClickBuku(buku.key, buku.judul);
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    openBuku.onLongClickBuku(view.getContext(), buku.key, buku.judul, buku.deskripsi);
+                    return false;
                 }
             });
         }

@@ -172,4 +172,95 @@ public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
         startActivity(intent);
     }
 
+    @Override
+    public void onLongClickBuku(Context context, final String key, final String judul, final String desc) {
+        new AlertDialog.Builder(context).setTitle("Opsi Buku")
+                .setItems(R.array.dialog_opsi_buku, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        switch (i){
+                            case 0:
+                                dialogEditBuku(key, judul, desc);
+                                break;
+                            case 1:
+                                dialogHapusBuku(key);
+                                break;
+                        }
+                    }
+                }).show();
+    }
+
+    private void dialogHapusBuku(final String key) {
+        new AlertDialog.Builder(context).setTitle("Hapus Buku")
+                .setMessage("Apakah Anda Yakin ingin ")
+                .setPositiveButton("Konfirmasi", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        reference.collection(COLLECTION_BUKU).document(key).delete()
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        makeSnackbar("Berhasil Hapus Buku");
+                                        getBookFromFireStore();
+                                    }
+                                })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                makeSnackbar("Gagal Hapus Buku");
+                            }
+                        });
+                    }
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+    }
+
+    private void dialogEditBuku(final String key, final String judul, String desc) {
+        View newCatatanDialogView = inflater.inflate(R.layout.dialog_new_buku, null);
+        final TextInputEditText judulEditText = newCatatanDialogView.findViewById(R.id.input_judul_buku);
+        judulEditText.setText(judul);
+        final TextInputEditText descEditText = newCatatanDialogView.findViewById(R.id.input_deskripsi_buku);
+        descEditText.setText(desc);
+        new AlertDialog.Builder(context)
+                .setTitle("Edit Buku")
+                .setView(newCatatanDialogView)
+                .setPositiveButton("Konfirmasi", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (judulEditText.getText()!=null&&judulEditText.getText().toString().length()>0){
+                            Map<String, Object> temp = new HashMap<>();
+                            temp.put(JUDUL_BUKU, judulEditText.getText().toString());
+                            temp.put(DESKRIPSI_BUKU, descEditText.getText().toString());
+
+                            reference.collection(COLLECTION_BUKU).document(key)
+                                    .update(temp)
+                                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            makeSnackbar("Berhasil Update");
+                                            getBookFromFireStore();
+                                        }
+                                    })
+                                    .addOnFailureListener(new OnFailureListener() {
+                                        @Override
+                                        public void onFailure(@NonNull Exception e) {
+                                            makeSnackbar("Gagal Update");
+                                        }
+                                    });
+                        }
+                    }
+                })
+                .setNegativeButton("Batal", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                }).show();
+    }
+
+    private void makeSnackbar(String msg){
+        Snackbar.make(root, msg,
+                Snackbar.LENGTH_SHORT).show();
+    }
 }

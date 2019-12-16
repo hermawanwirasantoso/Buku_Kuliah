@@ -31,4 +31,8 @@
         <item>Camera</item>
         <item>Gallery</item>
     </string-array>
+    <string-array name="dialog_opsi_buku">
+        <item>Edit Buku</item>
+        <item>Hapus Buku</item>
+    </string-array>
 </resources>

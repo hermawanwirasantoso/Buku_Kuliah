@@ -10,11 +10,13 @@ public class Catatan {
     public String content;
     @ServerTimestamp
     public Object timestamp;
+    public String HTMLtext;
 
-    public Catatan(String uid, String page, String content, Object timestamp) {
+    public Catatan(String uid, String page, String content, Object timestamp, String HTMLtext) {
         this.uid = uid;
         this.page = page;
         this.content = content;
         this.timestamp = timestamp;
+        this.HTMLtext = HTMLtext;
     }
 }

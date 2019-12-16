@@ -18,6 +18,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.ExifInterface;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -25,6 +27,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.format.DateFormat;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.CharacterStyle;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
+import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -61,6 +71,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
@@ -80,6 +92,7 @@ import static com.example.bukukuliah.FirebaseHelper.COLLECTION_USERS;
 import static com.example.bukukuliah.FirebaseHelper.CONTENT_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.DESC_AUDIO;
 import static com.example.bukukuliah.FirebaseHelper.DESC_GAMBAR;
+import static com.example.bukukuliah.FirebaseHelper.HTML_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.PAGE_AUDIO;
 import static com.example.bukukuliah.FirebaseHelper.PAGE_CATATAN;
 import static com.example.bukukuliah.FirebaseHelper.PAGE_GAMBAR;
@@ -106,6 +119,19 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     private TextView pageInfoTextView, dateTextView;
     private DocumentReference reference;
     private StorageReference imageStorageRef, audioStorageRef;
+    private CharacterStyle bold, italic, underline, highlight;
+
+    //AUDIO
+    static final int REQUEST_AUDIO_RECORD = 3;
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private boolean permissionToRecordAccepted = false;
+    private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+    private String audioFilename = null;
+    private MediaRecorder recorder = null;
+    private RecordButton recordButton = null;
+    private PlayButton playButton = null;
+    private MediaPlayer player = null;
+    private String htmlMainEditor = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,6 +143,10 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         isEditMode = false;
         currentPage = 0;
         pictureCount = 0;
+        bold = new StyleSpan(Typeface.BOLD);
+        italic = new StyleSpan(Typeface.ITALIC);
+        underline = new UnderlineSpan();
+        highlight = new BackgroundColorSpan(Color.YELLOW);
         hideEditTools();
         Intent intent = getIntent();
         String judul = intent.getStringExtra(INTENT_JUDUL_BUKU);
@@ -146,6 +176,11 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
             pageInfoTextView.setText(getString(R.string.page_info, String.valueOf((currentPage + 1))
                     , String.valueOf(catatanList.size())));
             dateTextView.setText(timeStampToStringDate((Timestamp) catatanList.get(currentPage).timestamp));
+            if (catatanList.get(currentPage).HTMLtext!=null){
+                htmlMainEditor = catatanList.get(currentPage).HTMLtext;
+                SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder(htmlMainEditor);
+                mainEditor.setText(Html.fromHtml(htmlMainEditor));
+            }
         }
     }
 
@@ -166,12 +201,16 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                                 catatanList.clear();
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     Map<String, Object> temp = document.getData();
-                                    catatanList.add(new Catatan(document.getId(), temp.get(PAGE_CATATAN).toString(), temp.get(CONTENT_CATATAN).toString(), temp.get(TANGGAL_CATATAN)));
+                                    String tempHtml = null;
+                                    if (temp.get(HTML_CATATAN)!=null){
+                                        tempHtml = temp.get(HTML_CATATAN).toString();
+                                    }
+                                    catatanList.add(new Catatan(document.getId(), temp.get(PAGE_CATATAN).toString(), temp.get(CONTENT_CATATAN).toString(), temp.get(TANGGAL_CATATAN), tempHtml));
                                 }
                                 if (task.getResult().size() == 0) {
                                     Catatan initialNote = new Catatan(null, String.valueOf(currentPage)
                                             , "",
-                                            Timestamp.now());
+                                            Timestamp.now(), null);
                                     catatanList.add(initialNote);
                                 }
                                 updateHalaman();
@@ -239,6 +278,85 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             case R.id.media_records:
                 audioListDialog();
+                break;
+            case R.id.menu_bold:
+                selectedTextToBold();
+                break;
+            case R.id.menu_italic:
+                selectedTextToItalic();
+                break;
+            case R.id.menu_underline:
+                selectedTextToUnderline();
+                break;
+            case R.id.menu_highlight:
+                selectedTextToHighlight();
+                break;
+        }
+    }
+
+    private void selectedTextToBold() {
+        if (mainEditor.getText() != null && mainEditor.getText().length() > 0) {
+            int start = mainEditor.getSelectionStart();
+            int end = mainEditor.getSelectionEnd();
+            if (htmlMainEditor==null){
+                htmlMainEditor = mainEditor.getText().toString();
+            }
+            if (start!=end){
+                SpannableStringBuilder sb = new SpannableStringBuilder(mainEditor.getText());
+                sb.setSpan(bold, start, end, 0);
+                htmlMainEditor = Html.toHtml(sb);
+                mainEditor.setText(Html.fromHtml(htmlMainEditor));
+                mainEditor.setSelection(end);
+            }
+        }
+    }
+    private void selectedTextToItalic() {
+        if (mainEditor.getText() != null && mainEditor.getText().length() > 0) {
+            int start = mainEditor.getSelectionStart();
+            int end = mainEditor.getSelectionEnd();
+            if (htmlMainEditor==null){
+                htmlMainEditor = mainEditor.getText().toString();
+            }
+            if (start!=end){
+                SpannableStringBuilder sb = new SpannableStringBuilder(mainEditor.getText());
+                sb.setSpan(italic, start, end, 0);
+                htmlMainEditor = Html.toHtml(sb);
+                mainEditor.setText(Html.fromHtml(htmlMainEditor));
+                mainEditor.setSelection(end);
+            }
+        }
+    }
+    private void selectedTextToUnderline() {
+        if (mainEditor.getText() != null && mainEditor.getText().length() > 0) {
+            int start = mainEditor.getSelectionStart();
+            int end = mainEditor.getSelectionEnd();
+            if (htmlMainEditor==null){
+                htmlMainEditor = mainEditor.getText().toString();
+            }
+            if (start!=end){
+                SpannableStringBuilder sb = new SpannableStringBuilder(mainEditor.getText());
+                sb.setSpan(underline, start, end, 0);
+                htmlMainEditor = Html.toHtml(sb);
+                mainEditor.setText(Html.fromHtml(htmlMainEditor));
+                mainEditor.setSelection(end);
+            }
+        }
+    }
+
+    private void selectedTextToHighlight() {
+        if (mainEditor.getText() != null && mainEditor.getText().length() > 0) {
+            int start = mainEditor.getSelectionStart();
+            int end = mainEditor.getSelectionEnd();
+            if (htmlMainEditor==null){
+                htmlMainEditor = mainEditor.getText().toString();
+            }
+            if (start!=end){
+                SpannableStringBuilder sb = new SpannableStringBuilder(mainEditor.getText());
+                sb.setSpan(highlight, start, end, 0);
+                htmlMainEditor = Html.toHtml(sb);
+                mainEditor.setText(Html.fromHtml(htmlMainEditor));
+                mainEditor.setSelection(end);
+            }
         }
     }
 
@@ -292,7 +410,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                                                     (Timestamp) temp.get(TIMESTAMP_AUDIO),
                                                     (long) temp.get(PAGE_AUDIO)));
                                         }
-                                    }else {
+                                    } else {
                                         audioList.add(new SavedFile(temp.get(URL_AUDIO).toString(),
                                                 temp.get(DESC_AUDIO).toString(),
                                                 (Timestamp) temp.get(TIMESTAMP_AUDIO),
@@ -310,25 +428,15 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     }
 
 
-    static final int REQUEST_AUDIO_RECORD = 3;
-    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
-    private boolean permissionToRecordAccepted = false;
-    private String [] permissions = {Manifest.permission.RECORD_AUDIO};
-    private String audioFilename = null;
-    private MediaRecorder recorder = null;
-    private RecordButton recordButton = null;
-    private PlayButton playButton = null;
-    private MediaPlayer player = null;
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode){
+        switch (requestCode) {
             case REQUEST_RECORD_AUDIO_PERMISSION:
-                permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
                 break;
         }
-        if (!permissionToRecordAccepted ) finish();
+        if (!permissionToRecordAccepted) finish();
     }
 
     private void onRecord(boolean start) {
@@ -433,7 +541,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
         audioFilename = getExternalCacheDir().getAbsolutePath();
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        audioFilename += "/REC_"+timeStamp+".aac";
+        audioFilename += "/REC_" + timeStamp + ".aac";
         View recordDialog = getLayoutInflater().inflate(R.layout.dialog_record_audio, null);
         LinearLayout linearLayout = recordDialog.findViewById(R.id.record_dialog_container);
         final TextInputEditText audioDescInput = recordDialog.findViewById(R.id.audio_desc_input);
@@ -473,7 +581,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                                 uploadFile(audioDescInput.getText().toString(), null, false);
                             else
                                 uploadFile("", null, false);
-                        }else {
+                        } else {
                             makeToast("Rekam Audio Dulu");
                         }
                     }
@@ -530,7 +638,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                                                     (Timestamp) temp.get(TIMESTAMP_GAMBAR),
                                                     (long) temp.get(PAGE_GAMBAR)));
                                         }
-                                    }else {
+                                    } else {
                                         imageList.add(new SavedFile(temp.get(URL_GAMBAR).toString(),
                                                 temp.get(DESC_GAMBAR).toString(),
                                                 (Timestamp) temp.get(TIMESTAMP_GAMBAR),
@@ -638,7 +746,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                     e.printStackTrace();
                 }
             }
-        } else if (requestCode == REQUEST_AUDIO_RECORD && resultCode == Activity.RESULT_OK){
+        } else if (requestCode == REQUEST_AUDIO_RECORD && resultCode == Activity.RESULT_OK) {
 
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -711,7 +819,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
             } else {
                 file = uri;
             }
-        }else {
+        } else {
             file = Uri.fromFile(new File(audioFilename));
         }
         final StorageReference imageRefs = imageStorageRef.child("images/"
@@ -724,7 +832,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 + file.getLastPathSegment());
         UploadTask uploadTask;
         if (isPhoto)
-            uploadTask= imageRefs.putFile(file);
+            uploadTask = imageRefs.putFile(file);
         else
             uploadTask = audioRefs.putFile(file);
         uploadProgressBar.setVisibility(View.VISIBLE);
@@ -748,9 +856,9 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
                 uploadProgressBar.setVisibility(View.GONE);
                 dialog.setTitle("Upload Berhasil");
                 dismissButton.setVisibility(View.VISIBLE);
-                if (isPhoto){
+                if (isPhoto) {
                     updateFireStoreGambar(descInput, imageRefs);
-                }else {
+                } else {
                     updateFireStoreAudio(descInput, audioRefs);
                 }
 
@@ -863,8 +971,10 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         if (catatanList.size() > 0) {
             catatanList.get(currentPage).content = mainEditor.getText().toString();
             catatanList.get(currentPage).timestamp = Timestamp.now();
+            SpannableStringBuilder span = new SpannableStringBuilder(mainEditor.getText());
+            catatanList.get(currentPage).HTMLtext = Html.toHtml(span);
         }
-        catatanList.add(new Catatan(null, String.valueOf((currentPage + 1)), "", Timestamp.now()));
+        catatanList.add(new Catatan(null, String.valueOf((currentPage + 1)), "", Timestamp.now(), null));
         currentPage = catatanList.size() - 1;
         updateHalaman();
     }
@@ -909,15 +1019,18 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         if (catatanList.size() > 0) {
             catatanList.get(currentPage).content = mainEditor.getText().toString();
             catatanList.get(currentPage).timestamp = Timestamp.now();
+            SpannableStringBuilder span = new SpannableStringBuilder(mainEditor.getText());
+            catatanList.get(currentPage).HTMLtext = Html.toHtml(span);
         } else {
             catatanList.add(new Catatan(null, String.valueOf(currentPage),
-                    mainEditor.getText().toString(), Timestamp.now()));
+                    mainEditor.getText().toString(), Timestamp.now(), htmlMainEditor));
         }
         for (Catatan catatan : catatanList) {
             Map<String, Object> temp = new HashMap<>();
             temp.put(CONTENT_CATATAN, catatan.content);
             temp.put(PAGE_CATATAN, catatan.page);
             temp.put(TANGGAL_CATATAN, catatan.timestamp);
+            temp.put(HTML_CATATAN, catatan.HTMLtext);
             if (catatan.uid != null) {
                 reference.collection(COLLECTION_BUKU)
                         .document(key)
