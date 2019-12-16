@@ -118,7 +118,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     private TextView pageInfoTextView, dateTextView;
     private DocumentReference reference;
     private StorageReference imageStorageRef, audioStorageRef;
-    private CharacterStyle normal, bold, italic, underline, highlight;
+    private CharacterStyle bold, italic, underline, highlight;
 
     //AUDIO
     static final int REQUEST_AUDIO_RECORD = 3;
@@ -142,7 +142,6 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         isEditMode = false;
         currentPage = 0;
         pictureCount = 0;
-        normal = new StyleSpan(Typeface.NORMAL);
         bold = new StyleSpan(Typeface.BOLD);
         italic = new StyleSpan(Typeface.ITALIC);
         underline = new UnderlineSpan();
@@ -1286,6 +1285,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         highlightButton.setVisibility(View.VISIBLE);
         addImageButton.setVisibility(View.VISIBLE);
         addVoiceButton.setVisibility(View.VISIBLE);
+        clearFormatButton.setVisibility(View.VISIBLE);
         mainEditor.setEnabled(true);
     }
 
@@ -1297,6 +1297,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         highlightButton.setVisibility(View.GONE);
         addImageButton.setVisibility(View.GONE);
         addVoiceButton.setVisibility(View.GONE);
+        clearFormatButton.setVisibility(View.GONE);
         mainEditor.setEnabled(false);
     }
 
