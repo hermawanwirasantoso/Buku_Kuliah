@@ -78,6 +78,7 @@ public class BukuFragment extends Fragment implements BukuAdapter.OpenBuku {
             display.getSize(size);
             height = size.y;
         }
+
         adapter = new BukuAdapter(context, bukuList, height - dpToPx(144),this, new View.OnClickListener() {
             @Override
             public void onClick(View view) {

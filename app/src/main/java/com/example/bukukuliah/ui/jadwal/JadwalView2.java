@@ -68,7 +68,7 @@ public class JadwalView2 extends AppCompatActivity {
     Intent intent;
     TextInputEditText txtJadwal, txtDeskripsi, txtLokasi;
     ProgressBar progressBar;
-    MaterialButton btnEdit, btnDelete,  txtWaktuStart, txtWaktuEnd, txtHari;
+    MaterialButton btnEdit, btnDelete, txtWaktuStart, txtWaktuEnd, txtHari;
     private static final int MY_PERMISSION_READ_CALENDAR = 100;
     private static final int MY_PERMISSION_WRITE_CALENDAR = 101;
     private DocumentReference reference;
@@ -83,14 +83,14 @@ public class JadwalView2 extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jadwal_view2);
 
-        btnEdit =  findViewById(R.id.edit_jadwal);
-        btnDelete =  findViewById(R.id.delete_jadwal);
-        txtJadwal =  findViewById(R.id.input_kegiatan);
-        txtDeskripsi =  findViewById(R.id.input_deskripsi_kegiatan);
-        txtLokasi =  findViewById(R.id.input_lokasi);
-        txtWaktuStart =  findViewById(R.id.input_time_start_kegiatan);
-        txtWaktuEnd =  findViewById(R.id.input_time_end_kegiatan);
-        txtHari =  findViewById(R.id.input_date_kegiatan);
+        btnEdit = findViewById(R.id.edit_jadwal);
+        btnDelete = findViewById(R.id.delete_jadwal);
+        txtJadwal = findViewById(R.id.input_kegiatan);
+        txtDeskripsi = findViewById(R.id.input_deskripsi_kegiatan);
+        txtLokasi = findViewById(R.id.input_lokasi);
+        txtWaktuStart = findViewById(R.id.input_time_start_kegiatan);
+        txtWaktuEnd = findViewById(R.id.input_time_end_kegiatan);
+        txtHari = findViewById(R.id.input_date_kegiatan);
         progressBar = findViewById(R.id.progressbar);
 
         initFireStore();
@@ -103,9 +103,9 @@ public class JadwalView2 extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String[] dateParts = txtHari.getText().toString().split("-");
-                 int day = Integer.parseInt(dateParts[0]);
-                 int month = Integer.parseInt(dateParts[1])-1;
-                 int year = Integer.parseInt(dateParts[2]);
+                int day = Integer.parseInt(dateParts[0]);
+                int month = Integer.parseInt(dateParts[1]) - 1;
+                int year = Integer.parseInt(dateParts[2]);
 
                 DatePickerDialog dialog = new DatePickerDialog(
                         JadwalView2.this,
@@ -113,7 +113,7 @@ public class JadwalView2 extends AppCompatActivity {
                         new DatePickerDialog.OnDateSetListener() {
                             @Override
                             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                                month = month+1;
+                                month = month + 1;
                                 String date = dayOfMonth + "-" + month + "-" + year;
                                 txtHari.setText(date);
                             }
@@ -137,14 +137,14 @@ public class JadwalView2 extends AppCompatActivity {
                         new TimePickerDialog.OnTimeSetListener() {
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                if (minute<10 && hourOfDay <10){
-                                    txtWaktuStart.setText("0"+hourOfDay+":"+"0"+minute);
-                                }else if(minute<10 && hourOfDay>=10){
-                                    txtWaktuStart.setText(hourOfDay+":"+"0"+minute);
-                                }else if(minute>=10 && hourOfDay<10){
-                                    txtWaktuStart.setText("0"+hourOfDay+":"+minute);
-                                }else if (minute>=10 && hourOfDay >=10){
-                                    txtWaktuStart.setText(hourOfDay+":"+minute);
+                                if (minute < 10 && hourOfDay < 10) {
+                                    txtWaktuStart.setText("0" + hourOfDay + ":" + "0" + minute);
+                                } else if (minute < 10 && hourOfDay >= 10) {
+                                    txtWaktuStart.setText(hourOfDay + ":" + "0" + minute);
+                                } else if (minute >= 10 && hourOfDay < 10) {
+                                    txtWaktuStart.setText("0" + hourOfDay + ":" + minute);
+                                } else if (minute >= 10 && hourOfDay >= 10) {
+                                    txtWaktuStart.setText(hourOfDay + ":" + minute);
                                 }
 
                             }
@@ -170,14 +170,14 @@ public class JadwalView2 extends AppCompatActivity {
                             @Override
                             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
-                                if (minute<10 && hourOfDay <10){
-                                    txtWaktuEnd.setText("0"+hourOfDay+":"+"0"+minute);
-                                }else if(minute<10 && hourOfDay>=10){
-                                    txtWaktuEnd.setText(hourOfDay+":"+"0"+minute);
-                                }else if(minute>=10 && hourOfDay<10){
-                                    txtWaktuEnd.setText("0"+hourOfDay+":"+minute);
-                                }else if (minute>=10 && hourOfDay >=10){
-                                    txtWaktuEnd.setText(hourOfDay+":"+minute);
+                                if (minute < 10 && hourOfDay < 10) {
+                                    txtWaktuEnd.setText("0" + hourOfDay + ":" + "0" + minute);
+                                } else if (minute < 10 && hourOfDay >= 10) {
+                                    txtWaktuEnd.setText(hourOfDay + ":" + "0" + minute);
+                                } else if (minute >= 10 && hourOfDay < 10) {
+                                    txtWaktuEnd.setText("0" + hourOfDay + ":" + minute);
+                                } else if (minute >= 10 && hourOfDay >= 10) {
+                                    txtWaktuEnd.setText(hourOfDay + ":" + minute);
                                 }
                             }
                         },
@@ -203,37 +203,37 @@ public class JadwalView2 extends AppCompatActivity {
                 String[] dateParts = date.split("-");
                 Integer day = Integer.parseInt(dateParts[0]);
                 Integer month = Integer.parseInt(dateParts[1]);
-                month = month-1;
+                month = month - 1;
                 Integer year = Integer.parseInt(dateParts[2]);
 
                 Calendar dayofWeek = Calendar.getInstance();
-                dayofWeek.set(year,month,day);
+                dayofWeek.set(year, month, day);
                 Integer intDayofWeek = dayofWeek.get(Calendar.DAY_OF_WEEK);
                 String DayOfWeek;
-                switch (intDayofWeek){
+                switch (intDayofWeek) {
                     case 1:
-                        DayOfWeek="Sun";
+                        DayOfWeek = "Sun";
                         break;
                     case 2:
-                        DayOfWeek="Mon";
+                        DayOfWeek = "Mon";
                         break;
                     case 3:
-                        DayOfWeek="Tue";
+                        DayOfWeek = "Tue";
                         break;
                     case 4:
-                        DayOfWeek="Wed";
+                        DayOfWeek = "Wed";
                         break;
                     case 5:
-                        DayOfWeek="Thu";
+                        DayOfWeek = "Thu";
                         break;
                     case 6:
-                        DayOfWeek="Fri";
+                        DayOfWeek = "Fri";
                         break;
                     case 7:
-                        DayOfWeek="Sat";
+                        DayOfWeek = "Sat";
                         break;
                     default:
-                        DayOfWeek="";
+                        DayOfWeek = "";
                 }
 
                 final Map<String, Object> jadwal = new HashMap<String, Object>();
@@ -243,7 +243,7 @@ public class JadwalView2 extends AppCompatActivity {
                 jadwal.put(FirebaseHelper.TANGGAL_KEGIATAN, txtHari.getText().toString());
                 jadwal.put(FirebaseHelper.WAKTU_KEGIATAN_START, txtWaktuStart.getText().toString());
                 jadwal.put(FirebaseHelper.WAKTU_KEGIATAN_END, txtWaktuEnd.getText().toString());
-                jadwal.put(FirebaseHelper.DAY_OF_WEEK,DayOfWeek);
+                jadwal.put(FirebaseHelper.DAY_OF_WEEK, DayOfWeek);
 
 
                 reference.update(jadwal)
@@ -290,6 +290,7 @@ public class JadwalView2 extends AppCompatActivity {
                                                 deleteCalendar(eventID);
                                                 Toast.makeText(JadwalView2.this, "Jadwal Telah dihapus", Toast.LENGTH_SHORT).show();
                                                 Intent intent = new Intent(JadwalView2.this, MainActivity.class);
+                                                intent.putExtra("test","test");
                                                 finish();
                                                 startActivity(intent);
                                             }
@@ -315,37 +316,11 @@ public class JadwalView2 extends AppCompatActivity {
 
     }
 
-    private void checkPermission(){
-        if (checkSelfPermission(Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-
-            ActivityCompat.requestPermissions( JadwalView2.this,
-                    new String[]{Manifest.permission.READ_CALENDAR}, MY_PERMISSION_READ_CALENDAR);
-
-
-        }
-
+    private void checkPermission() {
         if (checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    Activity#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for Activity#requestPermissions for more details.
-
-            ActivityCompat.requestPermissions( JadwalView2.this,
+            ActivityCompat.requestPermissions(JadwalView2.this,
                     new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSION_WRITE_CALENDAR);
-
-
         }
-
     }
 
     private void deleteCalendar(Long eventID) {
@@ -357,6 +332,11 @@ public class JadwalView2 extends AppCompatActivity {
 
 
     private void updateCalendar(Map<String, Object> jadwal) {
+
+        if (checkSelfPermission(Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(JadwalView2.this,
+                    new String[]{Manifest.permission.WRITE_CALENDAR}, MY_PERMISSION_WRITE_CALENDAR);
+        }
 
         long calID = 3;
         long startMillis = 0;
@@ -380,14 +360,14 @@ public class JadwalView2 extends AppCompatActivity {
         Integer hourEnd = Integer.parseInt(timeEndParts[0]);
         Integer minuteEnd = Integer.parseInt(timeEndParts[1]);
 
-        TimeZone utc = TimeZone.getTimeZone("UTC");
-        Calendar beginTime = Calendar.getInstance(utc);
+
+        Calendar beginTime = Calendar.getInstance();
         beginTime.clear();
         beginTime.set(year, month, day, hourStart, minuteStart);
         startMillis = beginTime.getTimeInMillis();
 
 
-        Calendar endTime = Calendar.getInstance(utc);
+        Calendar endTime = Calendar.getInstance();
         endTime.clear();
         endTime.set(year, month, day, hourEnd, minuteEnd);
         endMillis = endTime.getTimeInMillis();
@@ -406,6 +386,7 @@ public class JadwalView2 extends AppCompatActivity {
         new_values.put(CalendarContract.Events.EVENT_TIMEZONE, "Asia/Jakarta");
         new_values.put(CalendarContract.Events.HAS_ALARM, "1");
         new_values.put(CalendarContract.Events.RRULE, "FREQ=WEEKLY");
+
         Uri uri = cr.insert(CalendarContract.Events.CONTENT_URI, new_values);
 
         // get the event ID that is the last element in the Uri

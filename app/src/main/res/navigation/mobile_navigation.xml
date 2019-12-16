@@ -9,7 +9,11 @@
         android:id="@+id/navigation_catatan"
         android:name="com.example.bukukuliah.ui.buku.BukuFragment"
         android:label="@string/title_catatan"
-        tools:layout="@layout/fragment_buku" />
+        tools:layout="@layout/fragment_buku" >
+        <action
+            android:id="@+id/action_navigation_catatan_to_navigation_jadwal"
+            app:destination="@id/navigation_jadwal" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_jadwal"
