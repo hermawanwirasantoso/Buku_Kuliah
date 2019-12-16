@@ -1218,10 +1218,13 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     private void updateNomorHalaman() {
-        getBookContent();
+        catatanList.remove(currentPage);
+        currentPage--;
         for (int i=0;i<catatanList.size();i++){
             catatanList.get(i).page = String.valueOf(i);
         }
+        updateHalaman();
+        getBookContent();
         saveCatatan();
     }
 
